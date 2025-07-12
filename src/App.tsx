@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import Pong from './Pong';
+import TowerDefense from './TowerDefense';
 const Arkanoid = lazy(() => import('./Arkanoid'));
 const Tetris = lazy(() => import('./Tetris'));
 const Dino = lazy(() => import('./Dino'));
@@ -55,21 +56,7 @@ const Home: React.FC = () => (
       justifyItems: 'center',
       padding: '0 1rem',
     }}>
-      {[
-        { to: '/pong', label: 'Pong' },
-        { to: '/arkanoid', label: 'Arkanoid' },
-        { to: '/tetris', label: 'Tetris' },
-        { to: '/dino', label: 'Dino' },
-        { to: '/flappy', label: 'Flappy Bird' },
-        { to: '/whac-a-mole', label: 'Whac-A-Mole' },
-        { to: '/space-invaders', label: 'Space Invaders' },
-        { to: '/asteroids', label: 'Asteroids' },
-        { to: '/minesweeper', label: 'Minesweeper' },
-        { to: '/snake', label: 'Snake' },
-        { to: '/frogger', label: 'Frogger' },
-        { to: '/doodlejump', label: 'Doodle Jump' },
-        { to: '/unblockme', label: 'Unblock Me' },
-      ].map(({ to, label }) => (
+      {buttons.map(({ to, label }) => (
         <Link to={to} key={to} style={{ width: '100%' }}>
           <ButtonWithHover>{label}</ButtonWithHover>
         </Link>
@@ -78,7 +65,24 @@ const Home: React.FC = () => (
   </div>
 );
 
-// Botón con efecto hover
+// Array de botones fuera del componente
+const buttons = [
+  { to: '/pong', label: 'Pong' },
+  { to: '/arkanoid', label: 'Arkanoid' },
+  { to: '/tetris', label: 'Tetris' },
+  { to: '/dino', label: 'Dino' },
+  { to: '/flappy', label: 'Flappy Bird' },
+  { to: '/whac-a-mole', label: 'Whac-A-Mole' },
+  { to: '/space-invaders', label: 'Space Invaders' },
+  { to: '/asteroids', label: 'Asteroids' },
+  { to: '/minesweeper', label: 'Minesweeper' },
+  { to: '/snake', label: 'Snake' },
+  { to: '/frogger', label: 'Frogger' },
+  { to: '/doodlejump', label: 'Doodle Jump' },
+  { to: '/unblockme', label: 'Unblock Me' },
+  { to: '/tower-defense', label: 'Tower Defense' }
+];
+
 interface ButtonWithHoverProps {
   children: React.ReactNode;
 }
@@ -101,6 +105,10 @@ const App: React.FC = () => (
     <Suspense fallback={<div>Cargando...</div>}>
       <Routes>
         <Route path="/unblockme" element={<UnblockMe />} />
+        <Route path="/unblockme" element={<UnblockMe />} />
+        <Route path="/tower-defense" element={<TowerDefense />} />
+import Pong from './Pong';
+import TowerDefense from './TowerDefense';
             <Route path="/" element={<Home />} />
             <Route path="/pong" element={<Pong />} />
             <Route path="/arkanoid" element={<Arkanoid />} />
