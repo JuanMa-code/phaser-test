@@ -53,7 +53,21 @@ const TowerDefense: React.FC = () => {
     spawnTimer: 0,
   });
 
-  useEffect(() => {
+    // Colores por nivel (hasta 10)
+    const towerColors = [
+      0x1976d2, // 1 azul
+      0x43a047, // 2 verde
+      0xfbc02d, // 3 amarillo
+      0xe53935, // 4 rojo
+      0x8e24aa, // 5 violeta
+      0x00bcd4, // 6 cyan
+      0xff9800, // 7 naranja
+      0x6d4c41, // 8 marrón
+      0xcddc39, // 9 lima
+      0x212121  // 10 negro
+    ];
+
+    useEffect(() => {
     const app = new PIXI.Application({
       width: COLS * CELL_SIZE,
       height: ROWS * CELL_SIZE,
@@ -92,10 +106,23 @@ const TowerDefense: React.FC = () => {
         g.name = 'static';
         app.stage.addChild(g);
       });
-      // Draw towers
+      // Colores por nivel (hasta 10)
+      const towerColors = [
+        0x1976d2, // 1 azul
+        0x43a047, // 2 verde
+        0xfbc02d, // 3 amarillo
+        0xe53935, // 4 rojo
+        0x8e24aa, // 5 violeta
+        0x00bcd4, // 6 cyan
+        0xff9800, // 7 naranja
+        0x6d4c41, // 8 marrón
+        0xcddc39, // 9 lima
+        0x212121  // 10 negro
+      ];
       gameRef.current.towers.forEach(t => {
+        const color = towerColors[Math.min(t.level - 1, towerColors.length - 1)];
         const g = new PIXI.Graphics();
-        g.beginFill(0x1976d2);
+        g.beginFill(color);
         g.drawCircle(CELL_SIZE / 2, CELL_SIZE / 2, CELL_SIZE / 2 - 6);
         g.endFill();
         g.lineStyle(2, 0xffffff);
@@ -109,7 +136,13 @@ const TowerDefense: React.FC = () => {
     }
 
     function clearDynamic() {
-      app.stage.children = app.stage.children.filter(c => c.name === 'static' || c.name === 'tower');
+      // Elimina todos los elementos dinámicos (enemigos, shots, hp, ui)
+      for (let i = app.stage.children.length - 1; i >= 0; i--) {
+        const c = app.stage.children[i];
+        if (c.name !== 'static' && c.name !== 'tower') {
+          app.stage.removeChild(c);
+        }
+      }
     }
 
     function drawDynamic() {
@@ -138,10 +171,15 @@ const TowerDefense: React.FC = () => {
         hpBar.name = 'hp';
         app.stage.addChild(hpBar);
       });
-      // Draw shots
+      // Misil cambia color según nivel de torre
       gameRef.current.shots.forEach(s => {
+        const tower = gameRef.current.towers.find((_, idx) => idx === s.target);
+        let color = 0xffff00;
+        if (tower) {
+          color = towerColors[Math.min(tower.level - 1, towerColors.length - 1)];
+        }
         const g = new PIXI.Graphics();
-        g.beginFill(0xffff00);
+        g.beginFill(color);
         g.drawCircle(0, 0, 7);
         g.endFill();
         g.x = s.x;
