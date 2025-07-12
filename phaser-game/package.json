@@ -1,0 +1,33 @@
+{
+  "name": "phaser-game",
+  "version": "1.0.0",
+  "description": "A simple Phaser game project.",
+  "main": "src/main.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.6.0",
+    "phaser": "^3.90.0",
+    "pixi.js": "^7.4.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "typescript": "^4.9.5",
+    "vite": "^7.0.4"
+  },
+  "keywords": [
+    "phaser",
+    "game",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+}
