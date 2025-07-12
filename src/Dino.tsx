@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
+import React, { useEffect, useRef } from 'react';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 200;
@@ -41,6 +41,7 @@ const Dino: React.FC = () => {
     let velocityY = 0;
     let score = 0;
     let gameOver = false;
+    let startDelay = 30; // 30 ticks ~500ms
 
     function spawnObstacle() {
       const obs = new PIXI.Graphics();
@@ -62,10 +63,15 @@ const Dino: React.FC = () => {
       velocityY = 0;
       score = 0;
       gameOver = false;
+      startDelay = 30;
     }
 
     function update() {
       if (gameOver) return;
+      if (startDelay > 0) {
+        startDelay--;
+        return;
+      }
       obstacleTimer++;
       if (obstacleTimer > 60 + Math.random() * 60) {
         spawnObstacle();
