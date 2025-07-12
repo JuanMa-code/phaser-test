@@ -1,13 +1,29 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
 
-const COLS = 12;
-const ROWS = 8;
+const COLS = 16;
+const ROWS = 12;
 const CELL_SIZE = 48;
 const PATH = [
-  { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 },
-  { x: 4, y: 3 }, { x: 5, y: 3 }, { x: 6, y: 3 }, { x: 7, y: 3 },
-  { x: 8, y: 3 }, { x: 8, y: 4 }, { x: 9, y: 4 }, { x: 10, y: 4 }, { x: 11, y: 4 }
+  // Entrada desde la izquierda
+  { x: 0, y: 5 }, { x: 1, y: 5 }, { x: 2, y: 5 }, { x: 3, y: 5 },
+  { x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 },
+  // Primera curva hacia arriba
+  { x: 6, y: 4 }, { x: 6, y: 3 }, { x: 6, y: 2 },
+  // Hacia la derecha por arriba
+  { x: 7, y: 2 }, { x: 8, y: 2 }, { x: 9, y: 2 }, { x: 10, y: 2 }, { x: 11, y: 2 },
+  // Segunda curva hacia abajo
+  { x: 11, y: 3 }, { x: 11, y: 4 }, { x: 11, y: 5 }, { x: 11, y: 6 },
+  { x: 11, y: 7 }, { x: 11, y: 8 }, { x: 11, y: 9 },
+  // Hacia la izquierda por abajo
+  { x: 10, y: 9 }, { x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 },
+  { x: 6, y: 9 }, { x: 5, y: 9 }, { x: 4, y: 9 },
+  // Tercera curva hacia arriba
+  { x: 4, y: 8 }, { x: 4, y: 7 },
+  // Salida hacia la derecha
+  { x: 5, y: 7 }, { x: 6, y: 7 }, { x: 7, y: 7 }, { x: 8, y: 7 },
+  { x: 9, y: 7 }, { x: 10, y: 7 }, { x: 11, y: 7 }, { x: 12, y: 7 },
+  { x: 13, y: 7 }, { x: 14, y: 7 }, { x: 15, y: 7 }
 ];
 
 interface Enemy {
