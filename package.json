@@ -1,13 +1,13 @@
 {
   "name": "phaser-game",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple Phaser game project.",
   "main": "src/main.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-     "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.6.0",
