@@ -5,6 +5,7 @@ const Arkanoid = lazy(() => import('./Arkanoid'));
 const Tetris = lazy(() => import('./Tetris'));
 const Dino = lazy(() => import('./Dino'));
 const Flappy = lazy(() => import('./Flappy'));
+const WhacAMole = lazy(() => import('./WhacAMole'));
 
 const Home: React.FC = () => (
   <div style={{ textAlign: 'center', marginTop: '100px' }}>
@@ -22,7 +23,10 @@ const Home: React.FC = () => (
       <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Dino</button>
     </Link>
     <Link to="/flappy">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem' }}>Jugar Flappy Bird</button>
+      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Flappy Bird</button>
+    </Link>
+    <Link to="/whac-a-mole">
+      <button style={{ fontSize: '2rem', padding: '1rem 2rem' }}>Jugar Whac-A-Mole</button>
     </Link>
   </div>
 );
@@ -37,6 +41,7 @@ const App: React.FC = () => (
         <Route path="/tetris" element={<Tetris />} />
         <Route path="/dino" element={<Dino />} />
         <Route path="/flappy" element={<Flappy />} />
+        <Route path="/whac-a-mole" element={<WhacAMole />} />
       </Routes>
     </Suspense>
   </BrowserRouter>
