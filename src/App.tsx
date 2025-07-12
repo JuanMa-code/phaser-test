@@ -9,6 +9,7 @@ const WhacAMole = lazy(() => import('./WhacAMole'));
 const SpaceInvaders = lazy(() => import('./SpaceInvaders'));
 const Asteroids = lazy(() => import('./Asteroids'));
 const Minesweeper = lazy(() => import('./Minesweeper'));
+const Snake = lazy(() => import('./Snake'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -63,6 +64,9 @@ const Home: React.FC = () => (
       <Link to="/minesweeper">
         <button style={buttonStyle}>Minesweeper</button>
       </Link>
+           <Link to="/snake">
+               <button style={buttonStyle}>Snake</button>
+           </Link>
     </div>
   </div>
 );
@@ -71,16 +75,17 @@ const App: React.FC = () => (
   <BrowserRouter basename='/phaser-test'>
     <Suspense fallback={<div>Cargando...</div>}>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/pong" element={<Pong />} />
-        <Route path="/arkanoid" element={<Arkanoid />} />
-        <Route path="/tetris" element={<Tetris />} />
-        <Route path="/dino" element={<Dino />} />
-        <Route path="/flappy" element={<Flappy />} />
-        <Route path="/whac-a-mole" element={<WhacAMole />} />
-        <Route path="/space-invaders" element={<SpaceInvaders />} />
-        <Route path="/asteroids" element={<Asteroids />} />
-        <Route path="/minesweeper" element={<Minesweeper />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/pong" element={<Pong />} />
+            <Route path="/arkanoid" element={<Arkanoid />} />
+            <Route path="/tetris" element={<Tetris />} />
+            <Route path="/dino" element={<Dino />} />
+            <Route path="/flappy" element={<Flappy />} />
+            <Route path="/whac-a-mole" element={<WhacAMole />} />
+            <Route path="/space-invaders" element={<SpaceInvaders />} />
+            <Route path="/asteroids" element={<Asteroids />} />
+            <Route path="/minesweeper" element={<Minesweeper />} />
+            <Route path="/snake" element={<Snake />} />
       </Routes>
     </Suspense>
   </BrowserRouter>
