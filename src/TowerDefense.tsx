@@ -52,6 +52,9 @@ const TowerDefense: React.FC = () => {
     shots: [] as Shot[],
     pendingEnemies: [] as Enemy[],
     spawnTimer: 0,
+    currentGold: 10, // Añadimos oro a la referencia
+    currentWave: 1,  // Añadimos wave a la referencia
+    damageTexts: [] as Array<{x: number, y: number, damage: number, timer: number}>, // Textos de daño
   });
 
     // Colores por nivel (hasta 10)
@@ -107,19 +110,22 @@ const TowerDefense: React.FC = () => {
         g.name = 'static';
         app.stage.addChild(g);
       });
-      // Colores por nivel (hasta 10)
-      const towerColors = [
-        0x1976d2, // 1 azul
-        0x43a047, // 2 verde
-        0xfbc02d, // 3 amarillo
-        0xe53935, // 4 rojo
-        0x8e24aa, // 5 violeta
-        0x00bcd4, // 6 cyan
-        0xff9800, // 7 naranja
-        0x6d4c41, // 8 marrón
-        0xcddc39, // 9 lima
-        0x212121  // 10 negro
-      ];
+      staticDrawn = true;
+    }
+
+    function clearDynamic() {
+      // Elimina todos los elementos dinámicos (enemigos, shots, hp, ui, towers)
+      for (let i = app.stage.children.length - 1; i >= 0; i--) {
+        const c = app.stage.children[i];
+        if (c.name !== 'static') {
+          app.stage.removeChild(c);
+        }
+      }
+    }
+
+    function drawDynamic() {
+      clearDynamic();
+      // Draw towers (ahora en dinámico para que se actualicen)
       gameRef.current.towers.forEach(t => {
         const color = towerColors[Math.min(t.level - 1, towerColors.length - 1)];
         const g = new PIXI.Graphics();
@@ -132,22 +138,20 @@ const TowerDefense: React.FC = () => {
         g.y = t.y * CELL_SIZE;
         g.name = 'tower';
         app.stage.addChild(g);
+        
+        // Número del nivel en la torre
+        const levelText = new PIXI.Text(t.level.toString(), { 
+          fill: 0xffffff, 
+          fontSize: 14, 
+          fontWeight: 'bold',
+          align: 'center'
+        });
+        levelText.anchor.set(0.5);
+        levelText.x = t.x * CELL_SIZE + CELL_SIZE / 2;
+        levelText.y = t.y * CELL_SIZE + CELL_SIZE / 2;
+        levelText.name = 'tower-level';
+        app.stage.addChild(levelText);
       });
-      staticDrawn = true;
-    }
-
-    function clearDynamic() {
-      // Elimina todos los elementos dinámicos (enemigos, shots, hp, ui)
-      for (let i = app.stage.children.length - 1; i >= 0; i--) {
-        const c = app.stage.children[i];
-        if (c.name !== 'static' && c.name !== 'tower') {
-          app.stage.removeChild(c);
-        }
-      }
-    }
-
-    function drawDynamic() {
-      clearDynamic();
       // Draw enemies
       gameRef.current.enemies.forEach((e, idx) => {
         if (!e.alive) return;
@@ -171,6 +175,19 @@ const TowerDefense: React.FC = () => {
         hpBar.y = p.y * CELL_SIZE + CELL_SIZE - 12;
         hpBar.name = 'hp';
         app.stage.addChild(hpBar);
+        
+        // Número de vida en el enemigo
+        const hpText = new PIXI.Text(Math.ceil(hpValue).toString(), { 
+          fill: 0xffffff, 
+          fontSize: 12, 
+          fontWeight: 'bold',
+          align: 'center'
+        });
+        hpText.anchor.set(0.5);
+        hpText.x = p.x * CELL_SIZE + CELL_SIZE / 2;
+        hpText.y = p.y * CELL_SIZE + CELL_SIZE / 2;
+        hpText.name = 'enemy-hp';
+        app.stage.addChild(hpText);
       });
       // Misil cambia color según nivel de torre
       gameRef.current.shots.forEach(s => {
@@ -186,12 +203,12 @@ const TowerDefense: React.FC = () => {
       });
       // UI
       const style = new PIXI.TextStyle({ fill: 0xffffff, fontSize: 20, fontWeight: 'bold' });
-      const goldText = new PIXI.Text(`Oro: ${gold}`, style);
+      const goldText = new PIXI.Text(`Oro: ${gameRef.current.currentGold}`, style);
       goldText.x = 12;
       goldText.y = 8;
       goldText.name = 'ui';
       app.stage.addChild(goldText);
-      const waveText = new PIXI.Text(`Oleada: ${wave}`, style);
+      const waveText = new PIXI.Text(`Oleada: ${gameRef.current.currentWave}`, style);
       waveText.x = 12;
       waveText.y = 32;
       waveText.name = 'ui';
@@ -210,6 +227,23 @@ const TowerDefense: React.FC = () => {
         msg.name = 'ui';
         app.stage.addChild(msg);
       }
+      // Textos de daño flotantes (al final para que aparezcan por encima)
+      gameRef.current.damageTexts.forEach(dt => {
+        const damageText = new PIXI.Text(`-${dt.damage}`, { 
+          fill: 0xffff00, // Amarillo brillante
+          fontSize: 14, // Más pequeño
+          fontWeight: 'bold',
+          align: 'center',
+          stroke: 0x000000, // Borde negro
+          strokeThickness: 2 // Borde más fino
+        });
+        damageText.anchor.set(0.5);
+        damageText.x = dt.x + Math.random() * 20 - 10; // Un poco de aleatoriedad horizontal
+        damageText.y = dt.y - (120 - dt.timer) * 0.8; // Se mueve hacia arriba más rápido
+        damageText.alpha = Math.min(1, dt.timer / 20); // Se desvanece más gradualmente
+        damageText.name = 'damage-text';
+        app.stage.addChild(damageText);
+      });
     }
 
     drawStatic();
@@ -269,17 +303,39 @@ const TowerDefense: React.FC = () => {
           const e = gameRef.current.enemies[s.target];
           if (e && e.alive) {
             e.hp -= s.damage;
+            // Obtener posición actual del enemigo
+            const enemyPath = PATH[Math.floor(e.pos)];
+            if (enemyPath) {
+              // Añadir texto de daño flotante en la posición del enemigo
+              gameRef.current.damageTexts.push({
+                x: enemyPath.x * CELL_SIZE + CELL_SIZE / 2, // Centro del enemigo
+                y: enemyPath.y * CELL_SIZE + CELL_SIZE / 2 - 20, // Un poco arriba del enemigo
+                damage: s.damage,
+                timer: 120 // 2 segundos a 60fps
+              });
+              console.log(`Daño flotante creado: ${s.damage} en posición de enemigo (${enemyPath.x * CELL_SIZE + CELL_SIZE / 2}, ${enemyPath.y * CELL_SIZE + CELL_SIZE / 2 - 20})`);
+            }
           }
           return false;
         }
         return true;
       });
       // Remove dead enemies, add gold
+      let goldToAdd = 0;
       gameRef.current.enemies.forEach(e => {
         if (e.hp <= 0 && e.alive) {
-          setGold(g => g + wave);
+          goldToAdd += gameRef.current.currentWave - 1; // Usar wave de ref
           e.alive = false;
         }
+      });
+      if (goldToAdd > 0) {
+        gameRef.current.currentGold += goldToAdd;
+        setGold(gameRef.current.currentGold);
+      }
+      // Actualizar textos de daño
+      gameRef.current.damageTexts = gameRef.current.damageTexts.filter(dt => {
+        dt.timer--;
+        return dt.timer > 0;
       });
       drawDynamic();
       animationId = requestAnimationFrame(gameLoop);
@@ -308,17 +364,22 @@ const TowerDefense: React.FC = () => {
         setMessage('Ya hay una torre ahí');
         return;
       }
-      if (gold < 5) {
+      if (gameRef.current.currentGold < 5) {
         setMessage('No tienes suficiente oro');
         return;
       }
       gameRef.current.towers.push({ x: gridX, y: gridY, level: 1, cooldown: 0 });
-      setGold(g => g - 5);
+      gameRef.current.currentGold -= 5;
+      setGold(gameRef.current.currentGold);
       setMessage('');
       setPlacing(false);
+      drawDynamic(); // Redibujar inmediatamente
     }
 
     function onPointerUp(e: PointerEvent) {
+      // No mejorar torre si acabamos de colocar una
+      if (placing) return;
+      
       // Mejora torre si clicas sobre ella
       if (!(app.view instanceof HTMLCanvasElement)) return;
       const rect = app.view.getBoundingClientRect();
@@ -329,13 +390,15 @@ const TowerDefense: React.FC = () => {
       const idx = gameRef.current.towers.findIndex(t => t.x === gridX && t.y === gridY);
       if (idx !== -1) {
         const cost = Math.pow(2, gameRef.current.towers[idx].level) * 5;
-        if (gold < cost) {
+        if (gameRef.current.currentGold < cost) {
           setMessage('No tienes suficiente oro para mejorar');
           return;
         }
         gameRef.current.towers[idx].level += 1;
-        setGold(g => g - cost);
+        gameRef.current.currentGold -= cost;
+        setGold(gameRef.current.currentGold);
         setMessage('Torre mejorada');
+        drawDynamic(); // Redibujar inmediatamente
       }
     }
 
@@ -352,22 +415,27 @@ const TowerDefense: React.FC = () => {
       cancelAnimationFrame(animationId);
       app.destroy(true, { children: true });
     };
-  }, [placing, gold, wave, message]);
+  }, [placing, message]); // Removemos gold y wave de las dependencias
 
   // Iniciar oleada
   function startWave() {
     const newEnemies: Enemy[] = [];
-    for (let i = 0; i < wave * 2; i++) {
-      newEnemies.push({ pos: 0, hp: wave + 1, maxHp: wave + 1, alive: true });
+    for (let i = 0; i < gameRef.current.currentWave * 2; i++) {
+      newEnemies.push({ pos: 0, hp: gameRef.current.currentWave + 1, maxHp: gameRef.current.currentWave + 1, alive: true });
     }
     gameRef.current.pendingEnemies = newEnemies;
     gameRef.current.spawnTimer = 0;
     gameRef.current.enemies = [];
-    setWave(wave + 1);
+    gameRef.current.currentWave += 1;
+    setWave(gameRef.current.currentWave);
     setMessage('');
   }
 
-  // Verificar si quedan enemigos vivos
+  // Sincronizar estado inicial
+  useEffect(() => {
+    setGold(gameRef.current.currentGold);
+    setWave(gameRef.current.currentWave);
+  }, []);
   useEffect(() => {
     if (gameRef.current.enemies.length > 0 && gameRef.current.enemies.every(e => !e.alive)) {
       setMessage('¡Oleada completada!');
