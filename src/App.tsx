@@ -9,6 +9,7 @@ const WhacAMole = lazy(() => import('./WhacAMole'));
 const SpaceInvaders = lazy(() => import('./SpaceInvaders'));
 const Asteroids = lazy(() => import('./Asteroids'));
 const Minesweeper = lazy(() => import('./Minesweeper'));
+const Frogger = lazy(() => import('./Frogger'));
 const Snake = lazy(() => import('./Snake'));
 
 
@@ -67,6 +68,9 @@ const Home: React.FC = () => (
            <Link to="/snake">
                <button style={buttonStyle}>Snake</button>
            </Link>
+           <Link to="/frogger">
+               <button style={buttonStyle}>Frogger</button>
+           </Link>
     </div>
   </div>
 );
@@ -86,6 +90,7 @@ const App: React.FC = () => (
             <Route path="/asteroids" element={<Asteroids />} />
             <Route path="/minesweeper" element={<Minesweeper />} />
             <Route path="/snake" element={<Snake />} />
+            <Route path="/frogger" element={<Frogger />} />
       </Routes>
     </Suspense>
   </BrowserRouter>
