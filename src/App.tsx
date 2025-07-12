@@ -12,7 +12,7 @@ const Home: React.FC = () => (
 );
 
 const App: React.FC = () => (
-  <BrowserRouter>
+  <BrowserRouter basename='/phaser-test'>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/pong" element={<Pong />} />
