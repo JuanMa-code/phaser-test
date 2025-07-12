@@ -16,46 +16,85 @@ const UnblockMe = lazy(() => import('./UnblockMe'));
 
 
 const buttonStyle: React.CSSProperties = {
-  fontSize: '1.5rem',
-  padding: '1.2rem 2.2rem',
+  fontSize: '1.25rem',
+  padding: '1.1rem 2rem',
   background: 'linear-gradient(90deg, #f7b42c 0%, #fc575e 100%)',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '1.5rem',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+  color: '#222',
+  border: '2px solid #fff',
+  borderRadius: '1.2rem',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
   cursor: 'pointer',
-  transition: 'transform 0.1s',
-  fontWeight: 'bold',
+  transition: 'transform 0.15s, box-shadow 0.15s',
+  fontWeight: 600,
+  fontFamily: 'Segoe UI, Arial, sans-serif',
   outline: 'none',
+  letterSpacing: '0.03em',
+};
+
+const buttonHoverStyle: React.CSSProperties = {
+  transform: 'scale(1.06)',
+  boxShadow: '0 6px 24px rgba(0,0,0,0.18)',
+  background: 'linear-gradient(90deg, #ffe082 0%, #81d4fa 100%)',
 };
 
 const Home: React.FC = () => (
-  <div style={{ textAlign: 'center', marginTop: '60px' }}>
-    <h1 style={{ marginBottom: '40px', fontSize: '2.5rem', color: '#222' }}>Juegos Arcade</h1>
+  <div style={{
+    textAlign: 'center',
+    marginTop: '48px',
+    minHeight: '100vh',
+    background: 'linear-gradient(180deg, #b0b4ba 0%, #cfd8dc 100%)', // gris oscuro elegante
+    fontFamily: 'Segoe UI, Arial, sans-serif',
+  }}>
+    <h1 style={{ marginBottom: '32px', fontSize: '2.7rem', color: '#1976d2', fontWeight: 700, letterSpacing: '0.04em', textShadow: '0 2px 8px #b3e5fc' }}>Juegos Arcade</h1>
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-      gap: '2rem',
-      maxWidth: '900px',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '1.5rem',
+      maxWidth: '820px',
       margin: '0 auto',
       justifyItems: 'center',
+      padding: '0 1rem',
     }}>
-      <Link to="/pong"><button style={buttonStyle}>Pong</button></Link>
-      <Link to="/arkanoid"><button style={buttonStyle}>Arkanoid</button></Link>
-      <Link to="/tetris"><button style={buttonStyle}>Tetris</button></Link>
-      <Link to="/dino"><button style={buttonStyle}>Dino</button></Link>
-      <Link to="/flappy"><button style={buttonStyle}>Flappy Bird</button></Link>
-      <Link to="/whac-a-mole"><button style={buttonStyle}>Whac-A-Mole</button></Link>
-      <Link to="/space-invaders"><button style={buttonStyle}>Space Invaders</button></Link>
-      <Link to="/asteroids"><button style={buttonStyle}>Asteroids</button></Link>
-      <Link to="/minesweeper"><button style={buttonStyle}>Minesweeper</button></Link>
-      <Link to="/snake"><button style={buttonStyle}>Snake</button></Link>
-      <Link to="/frogger"><button style={buttonStyle}>Frogger</button></Link>
-      <Link to="/doodlejump"><button style={buttonStyle}>Doodle Jump</button></Link>
-      <Link to="/unblockme"><button style={buttonStyle}>Unblock Me</button></Link>
+      {[
+        { to: '/pong', label: 'Pong' },
+        { to: '/arkanoid', label: 'Arkanoid' },
+        { to: '/tetris', label: 'Tetris' },
+        { to: '/dino', label: 'Dino' },
+        { to: '/flappy', label: 'Flappy Bird' },
+        { to: '/whac-a-mole', label: 'Whac-A-Mole' },
+        { to: '/space-invaders', label: 'Space Invaders' },
+        { to: '/asteroids', label: 'Asteroids' },
+        { to: '/minesweeper', label: 'Minesweeper' },
+        { to: '/snake', label: 'Snake' },
+        { to: '/frogger', label: 'Frogger' },
+        { to: '/doodlejump', label: 'Doodle Jump' },
+        { to: '/unblockme', label: 'Unblock Me' },
+      ].map(({ to, label }) => (
+        <Link to={to} key={to} style={{ width: '100%' }}>
+          <ButtonWithHover>{label}</ButtonWithHover>
+        </Link>
+      ))}
     </div>
   </div>
 );
+
+// Botón con efecto hover
+interface ButtonWithHoverProps {
+  children: React.ReactNode;
+}
+
+const ButtonWithHover: React.FC<ButtonWithHoverProps> = ({ children }) => {
+  const [hover, setHover] = React.useState(false);
+  return (
+    <button
+      style={hover ? { ...buttonStyle, ...buttonHoverStyle } : buttonStyle}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      {children}
+    </button>
+  );
+};
 
 const App: React.FC = () => (
   <BrowserRouter basename='/phaser-test'>
