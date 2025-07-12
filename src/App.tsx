@@ -9,33 +9,57 @@ const WhacAMole = lazy(() => import('./WhacAMole'));
 const SpaceInvaders = lazy(() => import('./SpaceInvaders'));
 const Asteroids = lazy(() => import('./Asteroids'));
 
+
+const buttonStyle: React.CSSProperties = {
+  fontSize: '1.5rem',
+  padding: '1.2rem 2.2rem',
+  background: 'linear-gradient(90deg, #f7b42c 0%, #fc575e 100%)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: '1.5rem',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+  cursor: 'pointer',
+  transition: 'transform 0.1s',
+  fontWeight: 'bold',
+  outline: 'none',
+};
+
 const Home: React.FC = () => (
-  <div style={{ textAlign: 'center', marginTop: '100px' }}>
-    <h1>Bienvenido a los juegos</h1>
-    <Link to="/pong">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Pong</button>
-    </Link>
-    <Link to="/arkanoid">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Arkanoid</button>
-    </Link>
-    <Link to="/tetris">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Tetris</button>
-    </Link>
-    <Link to="/dino">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Dino</button>
-    </Link>
-    <Link to="/flappy">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Flappy Bird</button>
-    </Link>
-    <Link to="/whac-a-mole">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Whac-A-Mole</button>
-    </Link>
-    <Link to="/space-invaders">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Space Invaders</button>
-    </Link>
-    <Link to="/asteroids">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem' }}>Jugar Asteroids</button>
-    </Link>
+  <div style={{ textAlign: 'center', marginTop: '60px' }}>
+    <h1 style={{ marginBottom: '40px', fontSize: '2.5rem', color: '#222' }}>Juegos Arcade</h1>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+      gap: '2rem',
+      maxWidth: '900px',
+      margin: '0 auto',
+      justifyItems: 'center',
+    }}>
+      <Link to="/pong">
+        <button style={buttonStyle}>Pong</button>
+      </Link>
+      <Link to="/arkanoid">
+        <button style={buttonStyle}>Arkanoid</button>
+      </Link>
+      <Link to="/tetris">
+        <button style={buttonStyle}>Tetris</button>
+      </Link>
+      <Link to="/dino">
+        <button style={buttonStyle}>Dino</button>
+      </Link>
+      <Link to="/flappy">
+        <button style={buttonStyle}>Flappy Bird</button>
+      </Link>
+      <Link to="/whac-a-mole">
+        <button style={buttonStyle}>Whac-A-Mole</button>
+      </Link>
+      <Link to="/space-invaders">
+        <button style={buttonStyle}>Space Invaders</button>
+      </Link>
+      <Link to="/asteroids">
+        <button style={buttonStyle}>Asteroids</button>
+      </Link>
+    </div>
   </div>
 );
 
