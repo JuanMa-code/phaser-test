@@ -1,4 +1,13 @@
 
+
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get('redirect');
+if (redirect) {
+  // Haz que tu router navegue a la ruta indicada
+  window.history.replaceState({}, '', redirect);
+  // Ahora inicializa tu SPA normalmente
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   // Crear el contenedor del juego si no existe
   let gameDiv = document.getElementById('game');

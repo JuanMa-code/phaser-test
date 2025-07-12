@@ -1,7 +1,7 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
-import Pong from './Pong';
-import TowerDefense from './TowerDefense';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Link, Route, Routes, useNavigate } from 'react-router-dom';
+const Pong  = lazy(() => import( './Pong'));
+const TowerDefense  = lazy(() => import( './TowerDefense'));
 const Arkanoid = lazy(() => import('./Arkanoid'));
 const Tetris = lazy(() => import('./Tetris'));
 const Dino = lazy(() => import('./Dino'));
@@ -100,30 +100,47 @@ const ButtonWithHover: React.FC<ButtonWithHoverProps> = ({ children }) => {
   );
 };
 
-const App: React.FC = () => (
-  <BrowserRouter basename='/phaser-test'>
+
+
+
+const AppContent: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    if (redirect) {
+      navigate(redirect, { replace: true });
+    }
+  }, [navigate]);
+
+  return (
     <Suspense fallback={<div>Cargando...</div>}>
       <Routes>
         <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/tower-defense" element={<TowerDefense />} />
-import Pong from './Pong';
-import TowerDefense from './TowerDefense';
-            <Route path="/" element={<Home />} />
-            <Route path="/pong" element={<Pong />} />
-            <Route path="/arkanoid" element={<Arkanoid />} />
-            <Route path="/tetris" element={<Tetris />} />
-            <Route path="/dino" element={<Dino />} />
-            <Route path="/flappy" element={<Flappy />} />
-            <Route path="/whac-a-mole" element={<WhacAMole />} />
-            <Route path="/space-invaders" element={<SpaceInvaders />} />
-            <Route path="/asteroids" element={<Asteroids />} />
-            <Route path="/minesweeper" element={<Minesweeper />} />
-            <Route path="/snake" element={<Snake />} />
-            <Route path="/frogger" element={<Frogger />} />
-            <Route path="/doodlejump" element={<DoodleJump />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/pong" element={<Pong />} />
+        <Route path="/arkanoid" element={<Arkanoid />} />
+        <Route path="/tetris" element={<Tetris />} />
+        <Route path="/dino" element={<Dino />} />
+        <Route path="/flappy" element={<Flappy />} />
+        <Route path="/whac-a-mole" element={<WhacAMole />} />
+        <Route path="/space-invaders" element={<SpaceInvaders />} />
+        <Route path="/asteroids" element={<Asteroids />} />
+        <Route path="/minesweeper" element={<Minesweeper />} />
+        <Route path="/snake" element={<Snake />} />
+        <Route path="/frogger" element={<Frogger />} />
+        <Route path="/doodlejump" element={<DoodleJump />} />
       </Routes>
     </Suspense>
+  );
+};
+
+const App: React.FC = () => (
+  <BrowserRouter basename='/phaser-test'>
+    <AppContent />
   </BrowserRouter>
 );
 
