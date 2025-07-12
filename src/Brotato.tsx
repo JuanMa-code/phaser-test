@@ -5,13 +5,21 @@ const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
 const PLAYER_SPEED = 4;
 const BULLET_SPEED = 8;
-const ENEMY_SPEED = 1;
+const BASE_ENEMY_SPEED = 0.5; // Reducido para ser más lento inicialmente
 const SPAWN_RATE = 120; // frames entre spawns
+const BASE_SHOOT_COOLDOWN = 60; // 1 por segundo a 60fps
+const ENEMY_SPEED_INCREASE = 20; // cada 20 segundos (1200 frames)
+const EXP_PER_ENEMY = 15; // experiencia por enemigo
+const BASE_ENEMY_HP = 3; // vida base de los enemigos
 
 interface Player {
   x: number;
   y: number;
   radius: number;
+  level: number;
+  exp: number;
+  expToNext: number;
+  damage: number;
 }
 
 interface Enemy {
@@ -37,7 +45,15 @@ const Brotato: React.FC = () => {
   const [gameOver, setGameOver] = useState(false);
   
   const gameRef = useRef({
-    player: { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2, radius: 15 } as Player,
+    player: { 
+      x: GAME_WIDTH / 2, 
+      y: GAME_HEIGHT / 2, 
+      radius: 15,
+      level: 1,
+      exp: 0,
+      expToNext: 100,
+      damage: 1
+    } as Player,
     enemies: [] as Enemy[],
     bullets: [] as Bullet[],
     keys: {
@@ -51,6 +67,9 @@ const Brotato: React.FC = () => {
     spawnTimer: 0,
     currentScore: 0,
     shootCooldown: 0,
+    gameTime: 0, // Para controlar la velocidad de enemigos cada 30 segundos
+    currentEnemySpeed: BASE_ENEMY_SPEED,
+    currentEnemyHP: BASE_ENEMY_HP,
   });
 
   useEffect(() => {
@@ -113,6 +132,17 @@ const Brotato: React.FC = () => {
         enemyGraphic.drawRect(enemy.x - hpBarWidth/2, enemy.y - enemy.radius - 10, hpBarWidth * hpPercentage, hpBarHeight);
         enemyGraphic.endFill();
         
+        // Texto de HP
+        const hpText = new PIXI.Text(`${enemy.hp}/${enemy.maxHp}`, {
+          fill: 0xffffff,
+          fontSize: 10,
+          fontWeight: 'bold'
+        });
+        hpText.anchor.set(0.5);
+        hpText.x = enemy.x;
+        hpText.y = enemy.y - enemy.radius - 18;
+        enemyGraphic.addChild(hpText);
+        
         app.stage.addChild(enemyGraphic);
       });
 
@@ -135,13 +165,66 @@ const Brotato: React.FC = () => {
       scoreText.y = 10;
       app.stage.addChild(scoreText);
 
+      const levelText = new PIXI.Text(`Level: ${gameRef.current.player.level}`, {
+        fill: 0xfeca57,
+        fontSize: 18,
+        fontWeight: 'bold'
+      });
+      levelText.x = 10;
+      levelText.y = 35;
+      app.stage.addChild(levelText);
+
+      const damageText = new PIXI.Text(`Damage: ${gameRef.current.player.damage}`, {
+        fill: 0xff6b6b,
+        fontSize: 16,
+        fontWeight: 'bold'
+      });
+      damageText.x = 120;
+      damageText.y = 37;
+      app.stage.addChild(damageText);
+
+      // Barra de experiencia
+      const expBarWidth = 200;
+      const expBarHeight = 8;
+      const expPercentage = gameRef.current.player.exp / gameRef.current.player.expToNext;
+      
+      // Fondo de la barra
+      const expBarBg = new PIXI.Graphics();
+      expBarBg.beginFill(0x333333);
+      expBarBg.drawRect(10, 60, expBarWidth, expBarHeight);
+      expBarBg.endFill();
+      app.stage.addChild(expBarBg);
+      
+      // Barra de experiencia
+      const expBar = new PIXI.Graphics();
+      expBar.beginFill(0x00ff88);
+      expBar.drawRect(10, 60, expBarWidth * expPercentage, expBarHeight);
+      expBar.endFill();
+      app.stage.addChild(expBar);
+
+      const expText = new PIXI.Text(`XP: ${gameRef.current.player.exp}/${gameRef.current.player.expToNext}`, {
+        fill: 0xffffff,
+        fontSize: 12,
+      });
+      expText.x = 220;
+      expText.y = 56;
+      app.stage.addChild(expText);
+
       const enemyCount = new PIXI.Text(`Enemies: ${gameRef.current.enemies.filter(e => e.alive).length}`, {
         fill: 0xffffff,
         fontSize: 16,
       });
       enemyCount.x = 10;
-      enemyCount.y = 40;
+      enemyCount.y = 75;
       app.stage.addChild(enemyCount);
+
+      const timeText = new PIXI.Text(`Time: ${Math.floor(gameRef.current.gameTime / 60)}s`, {
+        fill: 0xffffff,
+        fontSize: 16,
+      });
+      timeText.x = 10;
+      timeText.y = 95;
+      app.stage.addChild(timeText);
     }
 
     function spawnEnemy() {
@@ -173,8 +256,8 @@ const Brotato: React.FC = () => {
       gameRef.current.enemies.push({
         x,
         y,
-        hp: 3,
-        maxHp: 3,
+        hp: gameRef.current.currentEnemyHP,
+        maxHp: gameRef.current.currentEnemyHP,
         radius: 12,
         alive: true,
       });
@@ -184,13 +267,25 @@ const Brotato: React.FC = () => {
       const player = gameRef.current.player;
       const keys = gameRef.current.keys;
 
-      // Move player
-      if (keys.w && player.y > player.radius) player.y -= PLAYER_SPEED;
-      if (keys.s && player.y < GAME_HEIGHT - player.radius) player.y += PLAYER_SPEED;
-      if (keys.a && player.x > player.radius) player.x -= PLAYER_SPEED;
-      if (keys.d && player.x < GAME_WIDTH - player.radius) player.x += PLAYER_SPEED;
+      // Incrementar tiempo de juego
+      gameRef.current.gameTime++;
 
-      // Auto-shoot
+      // Aumentar velocidad de enemigos cada 20 segundos
+      const speedIncreaseInterval = ENEMY_SPEED_INCREASE * 60; // 20 segundos * 60 fps
+      const speedIncreases = Math.floor(gameRef.current.gameTime / speedIncreaseInterval);
+      gameRef.current.currentEnemySpeed = BASE_ENEMY_SPEED + (speedIncreases * 0.2);
+      gameRef.current.currentEnemyHP = Math.floor(BASE_ENEMY_HP + (speedIncreases * 1.5)); // +1.5 HP cada 20 segundos
+
+      // Move player (only if game is not over)
+      if (!gameOver) {
+        if (keys.w && player.y > player.radius) player.y -= PLAYER_SPEED;
+        if (keys.s && player.y < GAME_HEIGHT - player.radius) player.y += PLAYER_SPEED;
+        if (keys.a && player.x > player.radius) player.x -= PLAYER_SPEED;
+        if (keys.d && player.x < GAME_WIDTH - player.radius) player.x += PLAYER_SPEED;
+      }
+
+      // Auto-shoot con velocidad basada en nivel
+      const currentShootCooldown = Math.max(10, BASE_SHOOT_COOLDOWN - (player.level - 1) * 5);
       gameRef.current.shootCooldown = Math.max(0, gameRef.current.shootCooldown - 1);
       if (gameRef.current.shootCooldown === 0) {
         const dx = gameRef.current.mouseX - player.x;
@@ -209,7 +304,7 @@ const Brotato: React.FC = () => {
             radius: 4,
           });
           
-          gameRef.current.shootCooldown = 15; // shoot every 15 frames
+          gameRef.current.shootCooldown = currentShootCooldown;
         }
       }
 
@@ -235,8 +330,8 @@ const Brotato: React.FC = () => {
           const normalizedX = dx / length;
           const normalizedY = dy / length;
           
-          enemy.x += normalizedX * ENEMY_SPEED;
-          enemy.y += normalizedY * ENEMY_SPEED;
+          enemy.x += normalizedX * gameRef.current.currentEnemySpeed;
+          enemy.y += normalizedY * gameRef.current.currentEnemySpeed;
         }
       });
 
@@ -252,13 +347,24 @@ const Brotato: React.FC = () => {
           const distance = Math.sqrt(dx * dx + dy * dy);
           
           if (distance < bullet.radius + enemy.radius) {
-            enemy.hp--;
+            enemy.hp -= player.damage;
             bulletHit = true;
             
             if (enemy.hp <= 0) {
               enemy.alive = false;
               gameRef.current.currentScore += 10;
               setScore(gameRef.current.currentScore);
+              
+              // Añadir experiencia
+              player.exp += EXP_PER_ENEMY;
+              
+              // Verificar si sube de nivel
+              if (player.exp >= player.expToNext) {
+                player.level++;
+                player.exp -= player.expToNext;
+                player.expToNext = Math.floor(player.expToNext * 1.2); // Aumenta la experiencia necesaria
+                player.damage++; // Aumenta el daño al subir de nivel
+              }
             }
           }
         });
@@ -275,6 +381,11 @@ const Brotato: React.FC = () => {
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < player.radius + enemy.radius) {
+          // Reset movement keys when dying
+          gameRef.current.keys.w = false;
+          gameRef.current.keys.a = false;
+          gameRef.current.keys.s = false;
+          gameRef.current.keys.d = false;
           setGameOver(true);
         }
       });
@@ -294,6 +405,7 @@ const Brotato: React.FC = () => {
 
     // Event listeners
     function handleKeyDown(e: KeyboardEvent) {
+      if (gameOver) return; // Don't process keys when game is over
       switch (e.key.toLowerCase()) {
         case 'w': gameRef.current.keys.w = true; break;
         case 'a': gameRef.current.keys.a = true; break;
@@ -303,6 +415,7 @@ const Brotato: React.FC = () => {
     }
 
     function handleKeyUp(e: KeyboardEvent) {
+      if (gameOver) return; // Don't process keys when game is over
       switch (e.key.toLowerCase()) {
         case 'w': gameRef.current.keys.w = false; break;
         case 'a': gameRef.current.keys.a = false; break;
@@ -350,7 +463,18 @@ const Brotato: React.FC = () => {
     gameRef.current.currentScore = 0;
     gameRef.current.enemies = [];
     gameRef.current.bullets = [];
-    gameRef.current.player = { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2, radius: 15 };
+    gameRef.current.gameTime = 0;
+    gameRef.current.currentEnemySpeed = BASE_ENEMY_SPEED;
+    gameRef.current.currentEnemyHP = BASE_ENEMY_HP;
+    gameRef.current.player = { 
+      x: GAME_WIDTH / 2, 
+      y: GAME_HEIGHT / 2, 
+      radius: 15,
+      level: 1,
+      exp: 0,
+      expToNext: 100,
+      damage: 1
+    };
   };
 
   if (gameOver) {
