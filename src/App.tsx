@@ -12,6 +12,7 @@ const Minesweeper = lazy(() => import('./Minesweeper'));
 const Frogger = lazy(() => import('./Frogger'));
 const Snake = lazy(() => import('./Snake'));
 const DoodleJump = lazy(() => import('./DoodleJump'));
+const UnblockMe = lazy(() => import('./UnblockMe'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -39,42 +40,19 @@ const Home: React.FC = () => (
       margin: '0 auto',
       justifyItems: 'center',
     }}>
-      <Link to="/pong">
-        <button style={buttonStyle}>Pong</button>
-      </Link>
-      <Link to="/arkanoid">
-        <button style={buttonStyle}>Arkanoid</button>
-      </Link>
-      <Link to="/tetris">
-        <button style={buttonStyle}>Tetris</button>
-      </Link>
-      <Link to="/dino">
-        <button style={buttonStyle}>Dino</button>
-      </Link>
-      <Link to="/flappy">
-        <button style={buttonStyle}>Flappy Bird</button>
-      </Link>
-      <Link to="/whac-a-mole">
-        <button style={buttonStyle}>Whac-A-Mole</button>
-      </Link>
-      <Link to="/space-invaders">
-        <button style={buttonStyle}>Space Invaders</button>
-      </Link>
-      <Link to="/asteroids">
-        <button style={buttonStyle}>Asteroids</button>
-      </Link>
-      <Link to="/minesweeper">
-        <button style={buttonStyle}>Minesweeper</button>
-      </Link>
-           <Link to="/snake">
-               <button style={buttonStyle}>Snake</button>
-           </Link>
-           <Link to="/frogger">
-               <button style={buttonStyle}>Frogger</button>
-           </Link>
-           <Link to="/doodlejump">
-               <button style={buttonStyle}>Doodle Jump</button>
-           </Link>
+      <Link to="/pong"><button style={buttonStyle}>Pong</button></Link>
+      <Link to="/arkanoid"><button style={buttonStyle}>Arkanoid</button></Link>
+      <Link to="/tetris"><button style={buttonStyle}>Tetris</button></Link>
+      <Link to="/dino"><button style={buttonStyle}>Dino</button></Link>
+      <Link to="/flappy"><button style={buttonStyle}>Flappy Bird</button></Link>
+      <Link to="/whac-a-mole"><button style={buttonStyle}>Whac-A-Mole</button></Link>
+      <Link to="/space-invaders"><button style={buttonStyle}>Space Invaders</button></Link>
+      <Link to="/asteroids"><button style={buttonStyle}>Asteroids</button></Link>
+      <Link to="/minesweeper"><button style={buttonStyle}>Minesweeper</button></Link>
+      <Link to="/snake"><button style={buttonStyle}>Snake</button></Link>
+      <Link to="/frogger"><button style={buttonStyle}>Frogger</button></Link>
+      <Link to="/doodlejump"><button style={buttonStyle}>Doodle Jump</button></Link>
+      <Link to="/unblockme"><button style={buttonStyle}>Unblock Me</button></Link>
     </div>
   </div>
 );
@@ -83,6 +61,7 @@ const App: React.FC = () => (
   <BrowserRouter basename='/phaser-test'>
     <Suspense fallback={<div>Cargando...</div>}>
       <Routes>
+        <Route path="/unblockme" element={<UnblockMe />} />
             <Route path="/" element={<Home />} />
             <Route path="/pong" element={<Pong />} />
             <Route path="/arkanoid" element={<Arkanoid />} />
