@@ -8,6 +8,7 @@ const Flappy = lazy(() => import('./Flappy'));
 const WhacAMole = lazy(() => import('./WhacAMole'));
 const SpaceInvaders = lazy(() => import('./SpaceInvaders'));
 const Asteroids = lazy(() => import('./Asteroids'));
+const Minesweeper = lazy(() => import('./Minesweeper'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -59,6 +60,9 @@ const Home: React.FC = () => (
       <Link to="/asteroids">
         <button style={buttonStyle}>Asteroids</button>
       </Link>
+      <Link to="/minesweeper">
+        <button style={buttonStyle}>Minesweeper</button>
+      </Link>
     </div>
   </div>
 );
@@ -76,6 +80,7 @@ const App: React.FC = () => (
         <Route path="/whac-a-mole" element={<WhacAMole />} />
         <Route path="/space-invaders" element={<SpaceInvaders />} />
         <Route path="/asteroids" element={<Asteroids />} />
+        <Route path="/minesweeper" element={<Minesweeper />} />
       </Routes>
     </Suspense>
   </BrowserRouter>

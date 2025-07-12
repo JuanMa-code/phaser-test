@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
+import React, { useEffect, useRef } from 'react';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
