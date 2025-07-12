@@ -238,9 +238,9 @@ const TowerDefense: React.FC = () => {
           strokeThickness: 2 // Borde más fino
         });
         damageText.anchor.set(0.5);
-        damageText.x = dt.x + Math.random() * 20 - 10; // Un poco de aleatoriedad horizontal
-        damageText.y = dt.y - (120 - dt.timer) * 0.8; // Se mueve hacia arriba más rápido
-        damageText.alpha = Math.min(1, dt.timer / 20); // Se desvanece más gradualmente
+        damageText.x = dt.x + Math.random() * 10 - 5; // Menos aleatoriedad horizontal
+        damageText.y = dt.y - (30 - dt.timer) * 1.5; // Se mueve hacia arriba desde el centro
+        damageText.alpha = Math.min(1, dt.timer / 10); // Se desvanece más rápido
         damageText.name = 'damage-text';
         app.stage.addChild(damageText);
       });
@@ -309,9 +309,9 @@ const TowerDefense: React.FC = () => {
               // Añadir texto de daño flotante en la posición del enemigo
               gameRef.current.damageTexts.push({
                 x: enemyPath.x * CELL_SIZE + CELL_SIZE / 2, // Centro del enemigo
-                y: enemyPath.y * CELL_SIZE + CELL_SIZE / 2 - 20, // Un poco arriba del enemigo
+                y: enemyPath.y * CELL_SIZE + CELL_SIZE / 2, // Centro del enemigo (sin offset)
                 damage: s.damage,
-                timer: 120 // 2 segundos a 60fps
+                timer: 30 // 1 segundo a 60fps
               });
               console.log(`Daño flotante creado: ${s.damage} en posición de enemigo (${enemyPath.x * CELL_SIZE + CELL_SIZE / 2}, ${enemyPath.y * CELL_SIZE + CELL_SIZE / 2 - 20})`);
             }
