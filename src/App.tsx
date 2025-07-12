@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import Pong from './Pong';
 const Arkanoid = lazy(() => import('./Arkanoid'));
 const Tetris = lazy(() => import('./Tetris'));
+const Dino = lazy(() => import('./Dino'));
 
 const Home: React.FC = () => (
   <div style={{ textAlign: 'center', marginTop: '100px' }}>
@@ -14,7 +15,10 @@ const Home: React.FC = () => (
       <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Arkanoid</button>
     </Link>
     <Link to="/tetris">
-      <button style={{ fontSize: '2rem', padding: '1rem 2rem' }}>Jugar Tetris</button>
+      <button style={{ fontSize: '2rem', padding: '1rem 2rem', marginRight: '2rem' }}>Jugar Tetris</button>
+    </Link>
+    <Link to="/dino">
+      <button style={{ fontSize: '2rem', padding: '1rem 2rem' }}>Jugar Dino</button>
     </Link>
   </div>
 );
@@ -27,6 +31,7 @@ const App: React.FC = () => (
         <Route path="/pong" element={<Pong />} />
         <Route path="/arkanoid" element={<Arkanoid />} />
         <Route path="/tetris" element={<Tetris />} />
+        <Route path="/dino" element={<Dino />} />
       </Routes>
     </Suspense>
   </BrowserRouter>
