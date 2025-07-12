@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Link, Route, Routes, useNavigate } from 'react-router-dom';
 const Pong  = lazy(() => import( './Pong'));
 const TowerDefense  = lazy(() => import( './TowerDefense'));
+const Brotato  = lazy(() => import( './Brotato'));
 const Arkanoid = lazy(() => import('./Arkanoid'));
 const Tetris = lazy(() => import('./Tetris'));
 const Dino = lazy(() => import('./Dino'));
@@ -160,7 +161,8 @@ const buttons = [
   { to: '/frogger', label: '🐸 Frogger' },
   { to: '/doodlejump', label: '🦘 Doodle Jump' },
   { to: '/unblockme', label: '🧩 Unblock Me' },
-  { to: '/tower-defense', label: '🏰 Tower Defense' }
+  { to: '/tower-defense', label: '🏰 Tower Defense' },
+  { to: '/brotato', label: '🥔 Brotato Style' }
 ];
 
 interface ButtonWithHoverProps {
@@ -200,6 +202,7 @@ const AppContent: React.FC = () => {
         <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/tower-defense" element={<TowerDefense />} />
+        <Route path="/brotato" element={<Brotato />} />
         <Route path="/" element={<Home />} />
         <Route path="/pong" element={<Pong />} />
         <Route path="/arkanoid" element={<Arkanoid />} />
