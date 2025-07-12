@@ -11,6 +11,7 @@ const Asteroids = lazy(() => import('./Asteroids'));
 const Minesweeper = lazy(() => import('./Minesweeper'));
 const Frogger = lazy(() => import('./Frogger'));
 const Snake = lazy(() => import('./Snake'));
+const DoodleJump = lazy(() => import('./DoodleJump'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -71,6 +72,9 @@ const Home: React.FC = () => (
            <Link to="/frogger">
                <button style={buttonStyle}>Frogger</button>
            </Link>
+           <Link to="/doodlejump">
+               <button style={buttonStyle}>Doodle Jump</button>
+           </Link>
     </div>
   </div>
 );
@@ -91,6 +95,7 @@ const App: React.FC = () => (
             <Route path="/minesweeper" element={<Minesweeper />} />
             <Route path="/snake" element={<Snake />} />
             <Route path="/frogger" element={<Frogger />} />
+            <Route path="/doodlejump" element={<DoodleJump />} />
       </Routes>
     </Suspense>
   </BrowserRouter>
