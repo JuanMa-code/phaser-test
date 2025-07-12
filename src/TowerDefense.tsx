@@ -32,6 +32,7 @@ interface Shot {
   progress: number;
   damage: number;
   target: number; // enemy index
+  towerLevel: number; // nivel de la torre que dispara
 }
 
 const ENEMY_SPEED = 0.02;
@@ -173,11 +174,7 @@ const TowerDefense: React.FC = () => {
       });
       // Misil cambia color según nivel de torre
       gameRef.current.shots.forEach(s => {
-        const tower = gameRef.current.towers.find((_, idx) => idx === s.target);
-        let color = 0xffff00;
-        if (tower) {
-          color = towerColors[Math.min(tower.level - 1, towerColors.length - 1)];
-        }
+        const color = towerColors[Math.min(s.towerLevel - 1, towerColors.length - 1)];
         const g = new PIXI.Graphics();
         g.beginFill(color);
         g.drawCircle(0, 0, 7);
@@ -252,7 +249,9 @@ const TowerDefense: React.FC = () => {
             gameRef.current.shots.push({
               x: t.x * CELL_SIZE + CELL_SIZE / 2,
               y: t.y * CELL_SIZE + CELL_SIZE / 2,
-              tx, ty, progress: 0, damage: Math.pow(2, t.level), target: targetIdx
+              tx, ty, progress: 0, damage: Math.pow(2, t.level), 
+              target: targetIdx,
+              towerLevel: t.level // Añadimos el nivel de la torre que dispara
             });
             t.cooldown = TOWER_COOLDOWN;
           }
