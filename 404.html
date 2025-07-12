@@ -1,0 +1,13 @@
+<!-- 404.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; url=/phaser-test/index.html">
+    <script>
+      // Para rutas profundas, redirecciona manteniendo la ruta original
+      var path = location.pathname.replace('/phaser-test', '');
+      location.replace('/phaser-test/index.html?redirect=' + encodeURIComponent(path + location.search + location.hash));
+    </script>
+  </head>
+  <body></body>
+</html>
