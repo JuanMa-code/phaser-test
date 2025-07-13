@@ -55,9 +55,13 @@ const Home: React.FC = () => (
     minHeight: '100vh',
     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    padding: '2rem 1rem',
+    padding: '1rem',
     position: 'relative',
     overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   }}>
     {/* Elementos decorativos de fondo */}
     <div style={{
@@ -82,42 +86,55 @@ const Home: React.FC = () => (
     }} />
     
     {/* Contenido principal */}
-    <div style={{ position: 'relative', zIndex: 1 }}>
-      <h1 style={{ 
-        marginBottom: '3rem', 
-        fontSize: 'clamp(2.5rem, 5vw, 4rem)', 
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        fontWeight: 800, 
-        letterSpacing: '2px',
-        textShadow: '0 4px 20px rgba(0,0,0,0.3)',
-        margin: '0 0 1rem 0',
-      }}>
-        🎮 ARCADE GAMES
-      </h1>
-      
-      <p style={{
-        fontSize: '1.2rem',
-        color: 'rgba(255,255,255,0.9)',
-        marginBottom: '3rem',
-        fontWeight: 300,
-        letterSpacing: '0.5px',
-        lineHeight: '1.6',
-        maxWidth: '600px',
-        margin: '0 auto 3rem auto',
-      }}>
-        Colección de juegos clásicos recreados con tecnología moderna
-      </p>
+    <div style={{ 
+      position: 'relative', 
+      zIndex: 1,
+      width: '100%',
+      maxWidth: '1200px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '80vh'
+    }}>
+      <div style={{ marginBottom: '2rem' }}>
+        <h1 style={{ 
+          marginBottom: '1.5rem', 
+          fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)', 
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          fontWeight: 800, 
+          letterSpacing: '2px',
+          textShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          margin: '0',
+        }}>
+          🎮 ARCADE GAMES
+        </h1>
+        
+        <p style={{
+          fontSize: '1.1rem',
+          color: 'rgba(255,255,255,0.9)',
+          marginBottom: '0',
+          fontWeight: 300,
+          letterSpacing: '0.5px',
+          lineHeight: '1.6',
+          maxWidth: '500px',
+          margin: '0 auto',
+        }}>
+          Colección de juegos clásicos recreados con tecnología moderna
+        </p>
+      </div>
       
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto',
+        gap: '1.5rem',
+        width: '100%',
+        maxWidth: '1000px',
         justifyItems: 'center',
+        marginTop: '1.5rem',
       }}>
         {buttons.map(({ to, label }) => (
           <Link to={to} key={to} style={{ 
@@ -197,9 +214,26 @@ const AppContent: React.FC = () => {
   }, [navigate]);
 
   return (
-    <Suspense fallback={<div>Cargando...</div>}>
+    <Suspense fallback={
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          color: 'white',
+          fontSize: '1.5rem',
+          fontWeight: '600'
+        }}>
+          🎮 Cargando juego...
+        </div>
+      </div>
+    }>
       <Routes>
-        <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/unblockme" element={<UnblockMe />} />
         <Route path="/tower-defense" element={<TowerDefense />} />
         <Route path="/brotato" element={<Brotato />} />
