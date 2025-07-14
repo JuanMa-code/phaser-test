@@ -15,6 +15,7 @@ const Frogger = lazy(() => import('./Frogger'));
 const Snake = lazy(() => import('./Snake'));
 const DoodleJump = lazy(() => import('./DoodleJump'));
 const UnblockMe = lazy(() => import('./UnblockMe'));
+const AirHockey = lazy(() => import('./AirHockey'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -166,6 +167,7 @@ const Home: React.FC = () => (
 // Array de botones fuera del componente
 const buttons = [
   { to: '/pong', label: '🏓 Pong' },
+  { to: '/air-hockey', label: '🏒 Air Hockey' },
   { to: '/arkanoid', label: '🧱 Arkanoid' },
   { to: '/tetris', label: '🟪 Tetris' },
   { to: '/dino', label: '🦕 Dino Run' },
@@ -239,6 +241,7 @@ const AppContent: React.FC = () => {
         <Route path="/brotato" element={<Brotato />} />
         <Route path="/" element={<Home />} />
         <Route path="/pong" element={<Pong />} />
+        <Route path="/air-hockey" element={<AirHockey />} />
         <Route path="/arkanoid" element={<Arkanoid />} />
         <Route path="/tetris" element={<Tetris />} />
         <Route path="/dino" element={<Dino />} />

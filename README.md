@@ -1,12 +1,13 @@
 # 🎮 Arcade GO GO
 
-Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 16 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
+Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 17 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
 
 ## 🎯 Juegos Disponibles
 
 ### 🕹️ Arcade Clásicos
 - **🐍 Snake** - El clásico juego de la serpiente con mecánicas modernas
 - **🏓 Pong** - El primer videojuego de la historia, modernizado
+- **🏒 Air Hockey** - Hockey de aire con física realista y bot inteligente
 - **🐸 Frogger** - Cruza la carretera evitando obstáculos
 - **🦕 Dino** - El famoso juego offline de Chrome
 - **🐦 Flappy Bird** - Vuela entre las tuberías sin chocar
@@ -33,6 +34,7 @@ phaser-test/
 │   ├── main.tsx         # Punto de entrada principal
 │   ├── App.tsx          # Componente principal con menú
 │   ├── assets/          # Recursos del juego (imágenes, sonidos)
+│   ├── AirHockey.tsx    # Hockey de aire con bot inteligente
 │   ├── Arkanoid.tsx     # Juego de romper bloques
 │   ├── Asteroids.tsx    # Juego de asteroides espaciales
 │   ├── Brotato.tsx      # Juego de supervivencia roguelike
