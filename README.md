@@ -2,6 +2,11 @@
 
 Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 17 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
 
+## 🚀 Demo en Vivo
+
+**¡Prueba todos los juegos ahora mismo!**  
+👉 **[https://juanma-code.github.io/phaser-test/](https://juanma-code.github.io/phaser-test/)**
+
 ## 🎯 Juegos Disponibles
 
 ### 🕹️ Arcade Clásicos
