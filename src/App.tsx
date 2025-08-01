@@ -16,6 +16,7 @@ const Snake = lazy(() => import('./Snake'));
 const DoodleJump = lazy(() => import('./DoodleJump'));
 const UnblockMe = lazy(() => import('./UnblockMe'));
 const AirHockey = lazy(() => import('./AirHockey'));
+const Football = lazy(() => import('./Football'));
 
 
 const buttonStyle: React.CSSProperties = {
@@ -181,7 +182,8 @@ const buttons = [
   { to: '/unblockme', label: '🧩 Unblock Me' },
   { to: '/tower-defense', label: '🏰 Tower Defense' },
   { to: '/brotato', label: '🥔 Brotato Style' },
-  { to: '/air-hockey', label: '🏒 Air Hockey' }
+  { to: '/air-hockey', label: '🏒 Air Hockey' },
+  { to: '/football', label: '⚽ Football' }
 ];
 
 interface ButtonWithHoverProps {
@@ -253,6 +255,7 @@ const AppContent: React.FC = () => {
         <Route path="/snake" element={<Snake />} />
         <Route path="/frogger" element={<Frogger />} />
         <Route path="/doodlejump" element={<DoodleJump />} />
+        <Route path="/football" element={<Football />} />
       </Routes>
     </Suspense>
   );
