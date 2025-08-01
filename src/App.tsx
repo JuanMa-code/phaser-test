@@ -167,7 +167,6 @@ const Home: React.FC = () => (
 // Array de botones fuera del componente
 const buttons = [
   { to: '/pong', label: '🏓 Pong' },
-  { to: '/air-hockey', label: '🏒 Air Hockey' },
   { to: '/arkanoid', label: '🧱 Arkanoid' },
   { to: '/tetris', label: '🟪 Tetris' },
   { to: '/dino', label: '🦕 Dino Run' },
@@ -181,7 +180,8 @@ const buttons = [
   { to: '/doodlejump', label: '🦘 Doodle Jump' },
   { to: '/unblockme', label: '🧩 Unblock Me' },
   { to: '/tower-defense', label: '🏰 Tower Defense' },
-  { to: '/brotato', label: '🥔 Brotato Style' }
+  { to: '/brotato', label: '🥔 Brotato Style' },
+  { to: '/air-hockey', label: '🏒 Air Hockey' }
 ];
 
 interface ButtonWithHoverProps {
