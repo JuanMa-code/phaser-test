@@ -1,6 +1,6 @@
 # 🎮 Arcade GO GO
 
-Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 17 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
+Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 18 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
 
 ## 🚀 Demo en Vivo
 
@@ -29,6 +29,7 @@ Una colección completa de juegos clásicos recreados con tecnologías modernas.
 ### 🎪 Juegos de Diversión
 - **🦘 Doodle Jump** - Salta de plataforma en plataforma hacia arriba
 - **🔨 Whac-A-Mole** - Golpea los topos que salen de los agujeros
+- **⚽ Football** - Simulador de fútbol con IA inteligente y dos tiempos
 - **🎯 Brotato** - Supervivencia tipo roguelike con mecánicas RPG
 
 ## 🚀 Estructura del Proyecto
@@ -46,6 +47,7 @@ phaser-test/
 │   ├── Dino.tsx         # Juego del dinosaurio de Chrome
 │   ├── DoodleJump.tsx   # Juego de saltos en plataformas
 │   ├── Flappy.tsx       # Clon de Flappy Bird
+│   ├── Football.tsx     # Simulador de fútbol con IA
 │   ├── Frogger.tsx      # Juego de cruzar la carretera
 │   ├── Minesweeper.tsx  # Buscaminas clásico
 │   ├── Pong.tsx         # Tenis de mesa retro
@@ -102,6 +104,37 @@ phaser-test/
    ```bash
    npm run deploy
    ```
+   
+   **⚠️ Requisitos previos para el despliegue:**
+   - Tener una cuenta de GitHub y permisos de escritura en el repositorio
+   - Haber configurado GitHub Pages en el repositorio (Settings → Pages → Source: "Deploy from a branch" → Branch: "gh-pages")
+   - Tener Git configurado localmente con credenciales válidas
+   - El comando creará automáticamente la rama `gh-pages` si no existe
+   
+   **📝 Nota:** El primer despliegue puede tardar unos minutos en estar disponible en la URL de GitHub Pages.
+
+## 🌐 Configuración de GitHub Pages
+
+Para habilitar GitHub Pages en tu fork del repositorio:
+
+1. **Ve a la configuración del repositorio:**
+   - Navega a tu repositorio en GitHub
+   - Haz clic en "Settings" (Configuración)
+
+2. **Configura GitHub Pages:**
+   - Desplázate hasta la sección "Pages" en el menú lateral
+   - En "Source" selecciona "Deploy from a branch"
+   - En "Branch" selecciona "gh-pages" y carpeta "/ (root)"
+   - Haz clic en "Save"
+
+3. **Ejecuta el despliegue:**
+   ```bash
+   npm run deploy
+   ```
+
+4. **Accede a tu sitio:**
+   - Tu sitio estará disponible en: `https://[tu-usuario].github.io/phaser-test/`
+   - La URL aparecerá en la sección Pages de la configuración
 
 ## 🎨 Características Destacadas
 
@@ -118,6 +151,14 @@ phaser-test/
 - **Estados de Juego** - Menús, instrucciones, pausa y game over
 
 ### 🏆 Juegos Destacados
+
+#### ⚽ Football (Complejo)
+- Simulador de fútbol completo con dos tiempos de juego
+- Sistema de IA inteligente con comportamientos tácticos por posición
+- Cambio de campo automático en el medio tiempo
+- 6 jugadores por equipo con roles específicos (Portero, Defensa, Medio, Delantero)
+- Física realista de pelota con fricción y rebotes
+- Controles intuitivos para mover al jugador seleccionado
 
 #### 🎯 Brotato (Más Complejo)
 - Sistema de salud y escudo del jugador

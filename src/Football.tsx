@@ -41,7 +41,7 @@ const FIELD_HEIGHT = 600;
 const PLAYER_SIZE = 15;
 const BALL_SIZE = 6;
 const GOAL_WIDTH = 80;
-const HALF_TIME_DURATION = 180; // Duración de cada parte en segundos (5 minutos)
+const HALF_TIME_DURATION = 180; // Duración de cada parte en segundos (3 minutos)
 
 const Football: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -464,7 +464,18 @@ const Football: React.FC = () => {
   const getTacticalPosition = (player: Player, ball: Ball): { x: number, y: number } => {
     const { position, team, actionZone, originalX, originalY } = player;
     const isBlue = team === 'blue';
-    const ballInOwnHalf = isBlue ? ball.x < FIELD_WIDTH / 2 : ball.x > FIELD_WIDTH / 2;
+    
+    // CORRECCIÓN: Calcular campo propio considerando el cambio de campo
+    // En primera parte: campo azul = izquierda, campo rojo = derecha
+    // En segunda parte: campo azul = derecha, campo rojo = izquierda (después del cambio)
+    let ballInOwnHalf: boolean;
+    if (gameStateRef.current.currentHalf === 1) {
+      // Primera parte - campos originales
+      ballInOwnHalf = isBlue ? ball.x < FIELD_WIDTH / 2 : ball.x > FIELD_WIDTH / 2;
+    } else {
+      // Segunda parte - campos invertidos
+      ballInOwnHalf = isBlue ? ball.x > FIELD_WIDTH / 2 : ball.x < FIELD_WIDTH / 2;
+    }
     
     switch (position) {
       case 'GK':
@@ -475,7 +486,15 @@ const Football: React.FC = () => {
       case 'DEF':
         if (ballInOwnHalf) {
           // Si la pelota está en campo propio, los defensas bajan hacia su portería
-          const ownGoalX = isBlue ? 30 : FIELD_WIDTH - 30;
+          // CORRECCIÓN: Calcular portería propia considerando el cambio de campo
+          let ownGoalX: number;
+          if (gameStateRef.current.currentHalf === 1) {
+            // Primera parte - porterías originales
+            ownGoalX = isBlue ? 30 : FIELD_WIDTH - 30;
+          } else {
+            // Segunda parte - porterías invertidas
+            ownGoalX = isBlue ? FIELD_WIDTH - 30 : 30;
+          }
           const ballDistanceToGoal = Math.abs(ball.x - ownGoalX);
           
           // Mientras más cerca esté la pelota de su portería, más retroceden
@@ -709,7 +728,18 @@ const Football: React.FC = () => {
         } else {
           // IA: comportamiento inteligente según posición
           const isBlue = player.team === 'blue';
-          const goalX = isBlue ? FIELD_WIDTH - 30 : 30; // Portería rival
+          
+          // CORRECCIÓN: Calcular portería objetivo considerando el cambio de campo
+          // En primera parte: azul ataca derecha, rojo ataca izquierda
+          // En segunda parte: azul ataca izquierda, rojo ataca derecha (por el cambio de campo)
+          let goalX: number;
+          if (gameStateRef.current.currentHalf === 1) {
+            // Primera parte - posiciones originales
+            goalX = isBlue ? FIELD_WIDTH - 30 : 30;
+          } else {
+            // Segunda parte - posiciones invertidas después del cambio de campo
+            goalX = isBlue ? 30 : FIELD_WIDTH - 30;
+          }
           const goalY = FIELD_HEIGHT / 2;
           
           switch (player.position) {
