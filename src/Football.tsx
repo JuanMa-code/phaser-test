@@ -41,6 +41,7 @@ const FIELD_HEIGHT = 600;
 const PLAYER_SIZE = 15;
 const BALL_SIZE = 6;
 const GOAL_WIDTH = 80;
+const HALF_TIME_DURATION = 180; // Duración de cada parte en segundos (5 minutos)
 
 const Football: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,7 +51,7 @@ const Football: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     gameStarted: false,
     currentHalf: 1,
-    timeLeft: 300, // 5 minutos por tiempo (300 segundos)
+    timeLeft: HALF_TIME_DURATION, // Usar la constante
     blueScore: 0,
     redScore: 0,
     isCountdown: false,
@@ -101,7 +102,7 @@ const Football: React.FC = () => {
                 gameStateRef.current = {
                   ...gameStateRef.current,
                   currentHalf: 2,
-                  timeLeft: 300,
+                  timeLeft: HALF_TIME_DURATION,
                   isCountdown: true,
                   countdownValue: 3,
                   gameStarted: false
@@ -109,15 +110,17 @@ const Football: React.FC = () => {
                 setGameState({ ...gameStateRef.current });
                 
                 startCountdown(() => {
-                  gameStateRef.current.gameStarted = true;
-                  setGameState({ ...gameStateRef.current });
+                  setGameState(prev => ({
+                    ...prev,
+                    gameStarted: true
+                  }));
                 });
               }, 1000);
               
               return {
                 ...prev,
                 currentHalf: 2,
-                timeLeft: 300,
+                timeLeft: HALF_TIME_DURATION,
                 gameStarted: false,
                 isCountdown: true,
                 countdownValue: 3,
@@ -148,7 +151,7 @@ const Football: React.FC = () => {
   // Efecto para manejar el cambio de medio tiempo
   useEffect(() => {
     // Este efecto se ejecuta cuando cambia el tiempo pero no debe interferir con el inicio
-    if (gameState.currentHalf === 2 && gameState.timeLeft === 300 && gameState.gameStarted && !gameState.isCountdown) {
+    if (gameState.currentHalf === 2 && gameState.timeLeft === HALF_TIME_DURATION && gameState.gameStarted && !gameState.isCountdown) {
       // Solo si estamos en una situación específica de cambio de tiempo
       console.log('Handling halftime transition');
     }
@@ -165,22 +168,28 @@ const Football: React.FC = () => {
   // Función para iniciar cuenta atrás
   const startCountdown = (callback?: () => void) => {
     console.log('Starting countdown...');
-    gameStateRef.current.isCountdown = true;
-    gameStateRef.current.countdownValue = 3;
-    setGameState({ ...gameStateRef.current });
+    setGameState(prev => ({
+      ...prev,
+      isCountdown: true,
+      countdownValue: 3
+    }));
     
     let count = 3;
     const countdownInterval = setInterval(() => {
       count--;
       console.log('Countdown:', count);
-      gameStateRef.current.countdownValue = count;
-      setGameState({ ...gameStateRef.current });
+      setGameState(prev => ({
+        ...prev,
+        countdownValue: count
+      }));
       
       if (count <= 0) {
         clearInterval(countdownInterval);
-        gameStateRef.current.isCountdown = false;
-        gameStateRef.current.showGoal = false; // Ocultar "GOL" al terminar cuenta atrás
-        setGameState({ ...gameStateRef.current });
+        setGameState(prev => ({
+          ...prev,
+          isCountdown: false,
+          showGoal: false
+        }));
         console.log('Countdown finished');
         if (callback) callback();
       }
@@ -190,23 +199,29 @@ const Football: React.FC = () => {
   // Función para iniciar cuenta atrás después de un gol
   const startGoalCountdown = (callback?: () => void) => {
     console.log('Starting goal countdown...');
-    gameStateRef.current.isCountdown = true;
-    gameStateRef.current.countdownValue = 3;
-    gameStateRef.current.showGoal = true; // Mostrar "GOL" durante la cuenta atrás
-    setGameState({ ...gameStateRef.current });
+    setGameState(prev => ({
+      ...prev,
+      isCountdown: true,
+      countdownValue: 3,
+      showGoal: true
+    }));
     
     let count = 3;
     const countdownInterval = setInterval(() => {
       count--;
       console.log('Goal countdown:', count);
-      gameStateRef.current.countdownValue = count;
-      setGameState({ ...gameStateRef.current });
+      setGameState(prev => ({
+        ...prev,
+        countdownValue: count
+      }));
       
       if (count <= 0) {
         clearInterval(countdownInterval);
-        gameStateRef.current.isCountdown = false;
-        gameStateRef.current.showGoal = false; // Ocultar "GOL" al terminar cuenta atrás
-        setGameState({ ...gameStateRef.current });
+        setGameState(prev => ({
+          ...prev,
+          isCountdown: false,
+          showGoal: false
+        }));
         console.log('Goal countdown finished');
         if (callback) callback();
       }
@@ -227,11 +242,11 @@ const Football: React.FC = () => {
       player.x = FIELD_WIDTH - player.x;
       player.originalX = FIELD_WIDTH - player.originalX;
       
-      // Intercambiar equipos
-      player.team = player.team === 'blue' ? 'red' : 'blue';
-      
-      // Recalcular zonas de acción con el nuevo equipo
-      player.actionZone = calculateActionZone(player.position, player.team);
+      // NO cambiar el equipo - los colores se mantienen igual durante todo el partido
+      // Solo recalcular las zonas de acción basadas en la nueva posición
+      // Para esto, temporalmente invertimos la lógica del equipo para el cálculo de zona
+      const temporaryTeam = player.team === 'blue' ? 'red' : 'blue';
+      player.actionZone = calculateActionZone(player.position, temporaryTeam);
     });
   };
 
@@ -425,10 +440,8 @@ const Football: React.FC = () => {
   const movePlayerTowards = (player: Player, targetX: number, targetY: number) => {
     const dist = distance(player.x, player.y, targetX, targetY);
     if (dist > 3) {
-      // Velocidades diferenciadas por posición
-      const speed = player.position === 'GK' ? 1.5 : 
-                   player.position === 'DEF' ? 2 :
-                   player.position === 'MID' ? 2.5 : 3; // ATT es más rápido
+      // Usar la velocidad del jugador definida en su inicialización
+      const speed = player.speed;
       
       const angle = Math.atan2(targetY - player.y, targetX - player.x);
       player.x += Math.cos(angle) * speed;
@@ -621,10 +634,14 @@ const Football: React.FC = () => {
         ball.vx *= -0.7;
         ball.x = 20;
       } else {
-        // Gol para el equipo rojo
+        // Gol en portería izquierda
         if (ball.x <= 0) {
           setGameState(prev => {
-            const newState = { ...prev, redScore: prev.redScore + 1 };
+            // En primera parte: portería izquierda = gol para rojo
+            // En segunda parte: portería izquierda = gol para azul (porque cambiaron de campo)
+            const newState = prev.currentHalf === 1 
+              ? { ...prev, redScore: prev.redScore + 1 }
+              : { ...prev, blueScore: prev.blueScore + 1 };
             gameStateRef.current = newState;
             return newState;
           });
@@ -641,10 +658,14 @@ const Football: React.FC = () => {
         ball.vx *= -0.7;
         ball.x = FIELD_WIDTH - 20;
       } else {
-        // Gol para el equipo azul
+        // Gol en portería derecha
         if (ball.x >= FIELD_WIDTH) {
           setGameState(prev => {
-            const newState = { ...prev, blueScore: prev.blueScore + 1 };
+            // En primera parte: portería derecha = gol para azul
+            // En segunda parte: portería derecha = gol para rojo (porque cambiaron de campo)
+            const newState = prev.currentHalf === 1 
+              ? { ...prev, blueScore: prev.blueScore + 1 }
+              : { ...prev, redScore: prev.redScore + 1 };
             gameStateRef.current = newState;
             return newState;
           });
@@ -823,10 +844,72 @@ const Football: React.FC = () => {
       ctx.fillText(gameStateRef.current.countdownValue.toString(), FIELD_WIDTH / 2, FIELD_HEIGHT / 2 + 40);
     }
     
-    // Continuar el loop siempre (excepto si el juego terminó)
-    if (gameStateRef.current.timeLeft > 0) {
-      animationRef.current = requestAnimationFrame(gameLoop);
+    // Mostrar mensaje de finalización del partido
+    if (gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+      ctx.fillRect(0, 0, FIELD_WIDTH, FIELD_HEIGHT);
+      
+      // Título "PARTIDO TERMINADO"
+      ctx.fillStyle = '#FFD700';
+      ctx.font = 'bold 60px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('¡PARTIDO TERMINADO!', FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 120);
+      
+      // Mostrar resultado final
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 48px Arial';
+      const winner = gameStateRef.current.blueScore > gameStateRef.current.redScore ? 
+        'GANÓ EQUIPO AZUL' : 
+        gameStateRef.current.redScore > gameStateRef.current.blueScore ? 
+        'GANÓ EQUIPO ROJO' : 
+        'EMPATE';
+      ctx.fillText(winner, FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 60);
+      
+      // Mostrar marcador final
+      ctx.font = 'bold 36px Arial';
+      ctx.fillText(`Resultado Final: ${gameStateRef.current.blueScore} - ${gameStateRef.current.redScore}`, 
+                   FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 10);
+      
+      // Botón Reiniciar
+      const restartButtonX = FIELD_WIDTH / 2 - 140;
+      const restartButtonY = FIELD_HEIGHT / 2 + 30;
+      const buttonWidth = 140;
+      const buttonHeight = 50;
+      
+      ctx.fillStyle = '#4CAF50';
+      ctx.fillRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
+      ctx.strokeStyle = '#45A049';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('🔄 REINICIAR', restartButtonX + buttonWidth/2, restartButtonY + buttonHeight/2 + 6);
+      
+      // Botón Menú
+      const menuButtonX = FIELD_WIDTH / 2 + 10;
+      const menuButtonY = FIELD_HEIGHT / 2 + 30;
+      const menuButtonWidth = 120;
+      const menuButtonHeight = 50;
+      
+      ctx.fillStyle = '#2196F3';
+      ctx.fillRect(menuButtonX, menuButtonY, menuButtonWidth, menuButtonHeight);
+      ctx.strokeStyle = '#1976D2';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(menuButtonX, menuButtonY, menuButtonWidth, menuButtonHeight);
+      
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('🏠 MENÚ', menuButtonX + menuButtonWidth/2, menuButtonY + menuButtonHeight/2 + 6);
+      
+      // Instrucciones para el usuario
+      ctx.font = 'bold 18px Arial';
+      ctx.fillStyle = '#FFFF88';
+      ctx.fillText('Haz clic en los botones o presiona R para Reiniciar | M para Menú', FIELD_WIDTH / 2, FIELD_HEIGHT / 2 + 120);
     }
+    
+    // Continuar el loop siempre para poder mostrar los mensajes
+    animationRef.current = requestAnimationFrame(gameLoop);
   }, []);
 
   // Iniciar el juego
@@ -847,7 +930,7 @@ const Football: React.FC = () => {
     const initialGameState: GameState = {
       gameStarted: true, // Empezar inmediatamente para mostrar jugadores
       currentHalf: 1,
-      timeLeft: 300,
+      timeLeft: HALF_TIME_DURATION,
       blueScore: 0,
       redScore: 0,
       isCountdown: true,
@@ -876,15 +959,104 @@ const Football: React.FC = () => {
     }, 50);
   };
 
+  // Función para reiniciar el partido
+  const restartGame = useCallback(() => {
+    console.log('Restarting game...');
+    
+    // Detener el loop de juego si está corriendo
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = undefined;
+    }
+    
+    // Limpiar completamente el array de jugadores
+    playersRef.current = [];
+    
+    // Reinicializar jugadores
+    initializePlayers();
+    
+    // Reiniciar el balón
+    resetBall();
+    
+    // Reiniciar estado del juego
+    const initialGameState: GameState = {
+      gameStarted: true,
+      currentHalf: 1,
+      timeLeft: HALF_TIME_DURATION,
+      blueScore: 0,
+      redScore: 0,
+      isCountdown: true,
+      countdownValue: 3,
+      showGoal: false
+    };
+    
+    setGameState(initialGameState);
+    gameStateRef.current = initialGameState;
+    
+    // Empezar cuenta atrás inicial
+    setTimeout(() => {
+      startCountdown(() => {
+        console.log('Countdown finished, game ready');
+        const newState = { ...gameStateRef.current, isCountdown: false };
+        setGameState(newState);
+        gameStateRef.current = newState;
+      });
+    }, 100);
+    
+    // Reiniciar el loop de juego
+    setTimeout(() => {
+      gameLoop();
+    }, 50);
+  }, [initializePlayers, gameLoop]);
+
+  // Función para volver al menú
+  const goToMenu = useCallback(() => {
+    console.log('Going back to menu...');
+    
+    // Detener el loop de juego si está corriendo
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = undefined;
+    }
+    
+    // Resetear al estado inicial
+    setShowInstructions(true);
+    
+    // Limpiar estado del juego
+    setGameState({
+      gameStarted: false,
+      currentHalf: 1,
+      timeLeft: HALF_TIME_DURATION,
+      blueScore: 0,
+      redScore: 0,
+      isCountdown: false,
+      countdownValue: 3,
+      showGoal: false,
+    });
+  }, []);
+
   // Event listeners para teclado
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current[e.key.toLowerCase()] = true;
+      
+      // Controles especiales cuando el juego ha terminado
+      if (gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2) {
+        if (e.key.toLowerCase() === 'r') {
+          console.log('Restart key pressed');
+          restartGame();
+        } else if (e.key.toLowerCase() === 'm') {
+          console.log('Menu key pressed');
+          goToMenu();
+        }
+      }
     };
     
     const handleKeyUp = (e: KeyboardEvent) => {
       keysRef.current[e.key.toLowerCase()] = false;
     };
+    
+    console.log('Setting up keyboard event listeners...');
     
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
@@ -896,7 +1068,185 @@ const Football: React.FC = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [restartGame, goToMenu]);
+
+  // Event listeners para mouse - se ejecutan después de que el juego esté activo
+  useEffect(() => {
+    // Solo registrar mouse listeners cuando el juego NO está en el menú de instrucciones
+    if (showInstructions) return;
+    
+    const handleMouseClick = (e: MouseEvent) => {
+      console.log('=== MOUSE CLICK DETECTED ===');
+      console.log('Raw click event received!');
+      console.log('Event target:', e.target);
+      console.log('Current target:', e.currentTarget);
+      console.log('Event type:', e.type);
+      console.log('Mouse coordinates:', e.clientX, e.clientY);
+      console.log('Game state timeLeft:', gameStateRef.current.timeLeft);
+      console.log('Game state currentHalf:', gameStateRef.current.currentHalf);
+      console.log('Game ended condition:', gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2);
+      
+      // Solo manejar clics cuando el juego ha terminado
+      if (gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2) {
+        console.log('Game has ended, processing click...');
+        
+        const canvas = canvasRef.current;
+        if (!canvas) {
+          console.log('Canvas not found!');
+          return;
+        }
+        
+        const rect = canvas.getBoundingClientRect();
+        console.log('Canvas rect:', rect);
+        
+        // Coordenadas del mouse relativas al canvas (sin escalado)
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        console.log('Mouse position relative to canvas:', mouseX, mouseY);
+        
+        // Convertir a coordenadas del canvas considerando el escalado
+        const canvasMouseX = (mouseX / rect.width) * canvas.width;
+        const canvasMouseY = (mouseY / rect.height) * canvas.height;
+        
+        console.log('Converted canvas coordinates:', canvasMouseX, canvasMouseY);
+        console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+        console.log('Display dimensions:', rect.width, 'x', rect.height);
+        
+        // Coordenadas de los botones (en coordenadas del canvas)
+        const restartButtonX = FIELD_WIDTH / 2 - 140;
+        const restartButtonY = FIELD_HEIGHT / 2 + 30;
+        const menuButtonX = FIELD_WIDTH / 2 + 10;
+        const menuButtonY = FIELD_HEIGHT / 2 + 30;
+        const restartButtonWidth = 140;
+        const restartButtonHeight = 50;
+        const menuButtonWidth = 120;
+        const menuButtonHeight = 50;
+        
+        console.log('Button dimensions - Restart:', restartButtonWidth, 'x', restartButtonHeight, 'Menu:', menuButtonWidth, 'x', menuButtonHeight);
+        console.log('Restart button area:', restartButtonX, restartButtonY, 'to', restartButtonX + restartButtonWidth, restartButtonY + restartButtonHeight);
+        console.log('Menu button area:', menuButtonX, menuButtonY, 'to', menuButtonX + menuButtonWidth, menuButtonY + menuButtonHeight);
+        
+        // Verificar clic en botón Reiniciar
+        const inRestartButton = canvasMouseX >= restartButtonX && canvasMouseX <= restartButtonX + restartButtonWidth &&
+                               canvasMouseY >= restartButtonY && canvasMouseY <= restartButtonY + restartButtonHeight;
+        
+        // Verificar clic en botón Menú
+        const inMenuButton = canvasMouseX >= menuButtonX && canvasMouseX <= menuButtonX + menuButtonWidth &&
+                             canvasMouseY >= menuButtonY && canvasMouseY <= menuButtonY + menuButtonHeight;
+        
+        console.log('Click in restart button:', inRestartButton);
+        console.log('Click in menu button:', inMenuButton);
+        
+        if (inRestartButton) {
+          console.log('RESTART BUTTON CLICKED!');
+          e.preventDefault();
+          e.stopPropagation();
+          restartGame();
+          return;
+        }
+        
+        if (inMenuButton) {
+          console.log('MENU BUTTON CLICKED!');
+          e.preventDefault();
+          e.stopPropagation();
+          goToMenu();
+          return;
+        }
+        
+        console.log('Click outside buttons');
+      } else {
+        console.log('Game not ended, ignoring click');
+      }
+      console.log('=== END MOUSE CLICK DEBUG ===');
+    };
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      // Solo cambiar cursor cuando el juego ha terminado
+      if (gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2) {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        
+        // Coordenadas del mouse relativas al canvas (sin escalado)
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Convertir a coordenadas del canvas considerando el escalado
+        const canvasMouseX = (mouseX / rect.width) * canvas.width;
+        const canvasMouseY = (mouseY / rect.height) * canvas.height;
+        
+        // Coordenadas de los botones (en coordenadas del canvas)
+        const restartButtonX = FIELD_WIDTH / 2 - 140;
+        const restartButtonY = FIELD_HEIGHT / 2 + 30;
+        const menuButtonX = FIELD_WIDTH / 2 + 10;
+        const menuButtonY = FIELD_HEIGHT / 2 + 30;
+        const restartButtonWidth = 140;
+        const restartButtonHeight = 50;
+        const menuButtonWidth = 120;
+        const menuButtonHeight = 50;
+        
+        // Verificar si el mouse está sobre algún botón
+        const isOverRestartButton = canvasMouseX >= restartButtonX && canvasMouseX <= restartButtonX + restartButtonWidth &&
+                                   canvasMouseY >= restartButtonY && canvasMouseY <= restartButtonY + restartButtonHeight;
+        const isOverMenuButton = canvasMouseX >= menuButtonX && canvasMouseX <= menuButtonX + menuButtonWidth &&
+                                 canvasMouseY >= menuButtonY && canvasMouseY <= menuButtonY + menuButtonHeight;
+        
+        // Debug: log cuando está sobre un botón
+        if (isOverRestartButton || isOverMenuButton) {
+          console.log('Mouse over button! Restart:', isOverRestartButton, 'Menu:', isOverMenuButton);
+          console.log('Setting cursor to pointer');
+        }
+        
+        // Cambiar cursor
+        const newCursor = (isOverRestartButton || isOverMenuButton) ? 'pointer' : 'default';
+        if (canvas.style.cursor !== newCursor) {
+          console.log('Changing cursor from', canvas.style.cursor, 'to', newCursor);
+          canvas.style.cursor = newCursor;
+        }
+      } else {
+        // Durante el juego, cursor normal
+        const canvas = canvasRef.current;
+        if (canvas && canvas.style.cursor !== 'default') {
+          console.log('Setting cursor to default during game');
+          canvas.style.cursor = 'default';
+        }
+      }
+    };
+    
+    // Esperar un poco para que el canvas esté completamente renderizado
+    const timer = setTimeout(() => {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        console.log('=== REGISTERING MOUSE EVENT LISTENERS ===');
+        console.log('Canvas element found:', canvas);
+        console.log('Canvas tagName:', canvas.tagName);
+        console.log('Canvas id:', canvas.id);
+        console.log('Canvas className:', canvas.className);
+        console.log('Canvas style.pointerEvents:', canvas.style.pointerEvents);
+        
+        // Registrar event listeners
+        canvas.addEventListener('click', handleMouseClick, { capture: false, passive: false });
+        canvas.addEventListener('mousemove', handleMouseMove, { capture: false, passive: false });
+        
+        console.log('Mouse event listeners registered successfully');
+        
+      } else {
+        console.error('CRITICAL: Canvas not found when trying to register mouse events');
+      }
+    }, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.removeEventListener('click', handleMouseClick);
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        console.log('Mouse event listeners removed');
+      }
+    };
+  }, [showInstructions, restartGame, goToMenu]); // Dependencias: se re-ejecuta cuando cambia showInstructions
 
   if (showInstructions) {
     return (
@@ -1056,7 +1406,18 @@ const Football: React.FC = () => {
           border: '4px solid #fff',
           borderRadius: '10px',
           boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-          background: '#228B22'
+          background: '#228B22',
+          cursor: 'default',
+          pointerEvents: 'auto',
+          touchAction: 'none'
+        }}
+        onClick={(e) => {
+          console.log('=== REACT onClick FIRED ===');
+          console.log('React click event:', e);
+        }}
+        onMouseDown={(e) => {
+          console.log('=== REACT onMouseDown FIRED ===');
+          console.log('React mousedown event:', e);
         }}
       />
       
