@@ -1,4 +1,4 @@
-import{r as h,j as t}from"./index-m1GFXamH.js";import{A as se,G as j,T as N,C as le}from"./HTMLText-BtEAuASx.js";const ce=`
+import{r as h,j as t}from"./index-Cg4ALjnl.js";import{A as se,G as j,T as N,C as le}from"./HTMLText-DvwlAgNv.js";const ce=`
   /* Ocultar barras de scroll pero mantener funcionalidad */
   ::-webkit-scrollbar {
     width: 0px;
