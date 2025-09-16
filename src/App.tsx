@@ -17,6 +17,7 @@ const DoodleJump = lazy(() => import('./DoodleJump'));
 const UnblockMe = lazy(() => import('./UnblockMe'));
 const AirHockey = lazy(() => import('./AirHockey'));
 const Football = lazy(() => import('./Football'));
+const Sudoku = lazy(() => import('./Sudoku')); // NUEVO
 
 
 const buttonStyle: React.CSSProperties = {
@@ -183,7 +184,8 @@ const buttons = [
   { to: '/tower-defense', label: '🏰 Tower Defense' },
   { to: '/brotato', label: '🥔 Brotato Style' },
   { to: '/air-hockey', label: '🏒 Air Hockey' },
-  { to: '/football', label: '⚽ Football' }
+  { to: '/football', label: '⚽ Football' },
+  { to: '/sudoku', label: '🧩 Sudoku' }, // NUEVO
 ];
 
 interface ButtonWithHoverProps {
@@ -202,7 +204,6 @@ const ButtonWithHover: React.FC<ButtonWithHoverProps> = ({ children }) => {
     </button>
   );
 };
-
 
 
 
@@ -256,6 +257,7 @@ const AppContent: React.FC = () => {
         <Route path="/frogger" element={<Frogger />} />
         <Route path="/doodlejump" element={<DoodleJump />} />
         <Route path="/football" element={<Football />} />
+        <Route path="/sudoku" element={<Sudoku />} /> {/* NUEVO */}
       </Routes>
     </Suspense>
   );

@@ -1,6 +1,6 @@
 # 🎮 Arcade GO GO
 
-Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 18 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
+Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 19 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
 
 ## 🚀 Demo en Vivo
 
@@ -24,6 +24,7 @@ Una colección completa de juegos clásicos recreados con tecnologías modernas.
 - **🧠 Tetris** - El puzzle de bloques más famoso del mundo
 - **💣 Minesweeper** - Encuentra todas las minas sin explotar
 - **🧩 Unblock Me** - Mueve los bloques para liberar el rojo
+- **🧩 Sudoku** - Generación de tableros con solución única y 4 niveles de dificultad (Fácil, Medio, Difícil, Experto)
 - **🏰 Tower Defense** - Defiende tu base con torres estratégicas
 
 ### 🎪 Juegos de Diversión
@@ -53,6 +54,7 @@ phaser-test/
 │   ├── Pong.tsx         # Tenis de mesa retro
 │   ├── Snake.tsx        # Serpiente clásica
 │   ├── SpaceInvaders.tsx # Invasores del espacio
+│   ├── Sudoku.tsx       # Sudoku con generador y 4 dificultades
 │   ├── Tetris.tsx       # Puzzle de bloques
 │   ├── TowerDefense.tsx # Defensa de torres
 │   ├── UnblockMe.tsx    # Puzzle de bloques deslizantes
@@ -151,6 +153,12 @@ Para habilitar GitHub Pages en tu fork del repositorio:
 - **Estados de Juego** - Menús, instrucciones, pausa y game over
 
 ### 🏆 Juegos Destacados
+
+#### 🧩 Sudoku (Nuevo)
+- Generación de tableros con solución única
+- 4 niveles de dificultad: Fácil, Medio, Difícil, Experto
+- Teclado y keypad táctil, detección de conflictos y temporizador
+- Resolver/Reiniciar en un clic y pantalla de victoria
 
 #### ⚽ Football (Complejo)
 - Simulador de fútbol completo con dos tiempos de juego
