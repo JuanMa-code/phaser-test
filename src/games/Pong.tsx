@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
@@ -207,200 +209,59 @@ const Pong: React.FC = () => {
 
   if (!gameStarted) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          maxWidth: '500px',
-          width: '90%',
-          textAlign: 'center',
-          color: 'white'
-        }}>
-          <h1 style={{ 
-            fontSize: '4rem', 
-            marginBottom: '1rem',
-            background: 'linear-gradient(45deg, #fff, #a8edea)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(255, 255, 255, 0.5)'
-          }}>
-            🏓 PONG
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.3rem', 
-            marginBottom: '2rem', 
-            opacity: 0.9,
-            lineHeight: '1.6'
-          }}>
-            El primer jugador en llegar a <strong>5 puntos</strong> gana la partida
-          </p>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.5rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎮 Controles
-            </h3>
-            <div style={{ 
-              display: 'grid', 
-              gap: '0.8rem',
-              fontSize: '1.1rem',
-              textAlign: 'left'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ 
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  padding: '0.3rem 0.8rem',
-                  borderRadius: '8px',
-                  fontWeight: 'bold',
-                  minWidth: '40px',
-                  textAlign: 'center'
-                }}>W</span>
-                <span>Mover paleta hacia arriba</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ 
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  padding: '0.3rem 0.8rem',
-                  borderRadius: '8px',
-                  fontWeight: 'bold',
-                  minWidth: '40px',
-                  textAlign: 'center'
-                }}>S</span>
-                <span>Mover paleta hacia abajo</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span style={{ 
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  padding: '0.3rem 0.8rem',
-                  borderRadius: '8px',
-                  fontWeight: 'bold',
-                  minWidth: '40px',
-                  textAlign: 'center'
-                }}>↑↓</span>
-                <span>También puedes usar las flechas</span>
-              </div>
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.5rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              ⚡ Mecánicas del Juego
-            </h3>
-            <div style={{ 
-              fontSize: '1rem',
-              textAlign: 'left',
-              lineHeight: '1.6'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>• La pelota acelera con cada rebote</p>
-              <p style={{ marginBottom: '0.5rem' }}>• El ángulo de rebote depende de dónde golpee la paleta</p>
-              <p style={{ marginBottom: '0.5rem' }}>• La IA se vuelve más agresiva cuando vas ganando</p>
-              <p>• ¡Domina el timing para conseguir tiros imposibles!</p>
-            </div>
-          </div>
-          
-          <button 
-            onClick={startGame}
-            style={{
-              fontSize: '1.3rem',
-              padding: '1rem 2.5rem',
-              background: 'linear-gradient(45deg, #4facfe, #00f2fe)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '15px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(79, 172, 254, 0.3)',
-              transition: 'all 0.3s ease',
-              transform: 'translateY(0)'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(79, 172, 254, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(79, 172, 254, 0.3)';
-            }}
-          >
-            ▶️ Comenzar Partida
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🏓 PONG"
+        description="El primer jugador en llegar a 5 puntos gana la partida"
+        instructions={[
+          {
+            title: 'Controles',
+            items: [
+              'W: Mover paleta hacia arriba',
+              'S: Mover paleta hacia abajo',
+              '↑↓: También puedes usar las flechas'
+            ],
+            icon: '🎮'
+          },
+          {
+            title: 'Mecánicas',
+            items: [
+              'La pelota acelera con cada rebote',
+              'El ángulo depende de dónde golpee',
+              'La IA se vuelve más agresiva'
+            ],
+            icon: '⚡'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          primary: '#4facfe',
+          secondary: '#00f2fe',
+          accent: '#a8edea',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}
+      />
     );
   }
 
   if (gameOver) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1 style={{ color: winner === 'Jugador' ? '#4dabf7' : '#ff4757', fontSize: '3rem', marginBottom: '1rem' }}>
-          {winner === 'Jugador' ? '🎉 ¡VICTORIA!' : '😢 DERROTA'}
-        </h1>
-        <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
-          {winner} gana {winner === 'Jugador' ? playerScore : aiScore} - {winner === 'Jugador' ? aiScore : playerScore}
-        </p>
-        <button 
-          onClick={restartGame}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#4dabf7',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginRight: '1rem',
-            fontWeight: 'bold'
-          }}
-        >
-          🔄 Jugar de Nuevo
-        </button>
-        <button 
-          onClick={() => window.history.back()}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#747d8c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          🏠 Volver al Menú
-        </button>
-      </div>
+      <GameOverScreen
+        score={playerScore}
+        isVictory={winner === 'Jugador'}
+        onRestart={restartGame}
+        onMenu={() => window.history.back()}
+        theme={{
+          primary: '#4facfe',
+          secondary: '#00f2fe',
+          accent: '#a8edea',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        }}
+        customStats={[
+          { label: 'Jugador', value: playerScore },
+          { label: 'IA', value: aiScore },
+          { label: 'Resultado', value: winner === 'Jugador' ? '¡VICTORIA!' : 'DERROTA' }
+        ]}
+      />
     );
   }
 

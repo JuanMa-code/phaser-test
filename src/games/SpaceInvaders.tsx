@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
@@ -402,222 +404,66 @@ const SpaceInvaders: React.FC = () => {
 
   if (!gameStarted) {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%)',
-        fontFamily: 'Arial, sans-serif',
-        padding: '1rem',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          maxWidth: '500px',
-          width: '95%',
-          textAlign: 'center',
-          color: 'white',
-          margin: '1rem auto'
-        }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            marginBottom: '1rem',
-            background: 'linear-gradient(45deg, #ff0080, #00ff80, #0080ff)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(255, 0, 128, 0.5)'
-          }}>
-            👾 SPACE INVADERS
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.1rem', 
-            marginBottom: '1.5rem', 
-            opacity: 0.9,
-            lineHeight: '1.4'
-          }}>
-            ¡Defiende la Tierra de la invasión alienígena!
-          </p>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🚀 Controles
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>🎮 ← → A D: Mover nave espacial</p>
-              <p style={{ marginBottom: '0.5rem' }}>💥 Espacio ↑ W: Disparar láser</p>
-              <p>⚡ Máximo 3 balas simultáneas</p>
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎯 Sistema de Puntuación
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>👾 Alienígenas superiores: 50 puntos</p>
-              <p style={{ marginBottom: '0.5rem' }}>👾 Alienígenas inferiores: 10 puntos</p>
-              <p>🌊 Más oleadas = más puntos bonus</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.2rem',
-              padding: '0.8rem 2rem',
-              background: 'linear-gradient(45deg, #ff0080, #00ff80)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(255, 0, 128, 0.3)',
-              transition: 'all 0.3s ease',
-              transform: 'translateY(0)',
-              marginBottom: '1.5rem'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 0, 128, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 0, 128, 0.3)';
-            }}
-          >
-            🛸 ¡Comenzar Batalla!
-          </button>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              ⚠️ Misión de Supervivencia
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>❤️ Tienes 3 vidas para empezar</p>
-              <p style={{ marginBottom: '0.5rem' }}>🚫 Evita las balas enemigas</p>
-              <p>🏆 ¡Sobrevive 10 oleadas para ganar!</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GameStartScreen
+        title="👾 SPACE INVADERS"
+        description="¡Defiende la Tierra de la invasión alienígena!"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "🎮 ← → A D: Mover nave espacial",
+              "💥 Espacio ↑ W: Disparar láser",
+              "⚡ Máximo 3 balas simultáneas"
+            ],
+            icon: '🎮'
+          },
+          {
+            title: "Sistema de Puntuación",
+            items: [
+              "👾 Alienígenas superiores: 50 puntos",
+              "👾 Alienígenas inferiores: 10 puntos",
+              "🌊 Más oleadas = más puntos bonus"
+            ],
+            icon: '📊'
+          },
+          {
+            title: "Misión de Supervivencia",
+            items: [
+              "❤️ Tienes 3 vidas para empezar",
+              "🚫 Evita las balas enemigas",
+              "🏆 ¡Sobrevive 10 oleadas para ganar!"
+            ],
+            icon: '🛡️'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%)',
+          accent: 'linear-gradient(45deg, #ff0080, #00ff80, #0080ff)',
+          primary: 'linear-gradient(45deg, #ff0080, #00ff80)'
+        }}
+      />
     );
   }
 
   if (gameOver || victory) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: victory 
-          ? 'linear-gradient(135deg, #0a1a0a 0%, #1a3a1a 100%)'
-          : 'linear-gradient(135deg, #1a0a0a 0%, #3a1a1a 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {victory ? '🏆 ¡VICTORIA!' : '💥 ¡GAME OVER!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>🎯 Puntuación Final: <strong>{score}</strong></p>
-            <p>🌊 Oleadas Completadas: <strong>{wave - 1}</strong></p>
-            {victory && <p style={{ color: '#00ff80' }}>¡Has salvado la Tierra!</p>}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #ff0080, #00ff80)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Reintentar
-            </button>
-            <button
-              onClick={() => setGameStarted(false)}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #0a0a1a, #1a1a3a)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        onRestart={restartGame}
+        onMenu={() => setGameStarted(false)}
+        isVictory={victory}
+        customStats={[
+          { label: 'Oleadas Completadas', value: wave - 1 }
+        ]}
+        theme={{
+          background: victory 
+            ? 'linear-gradient(135deg, #0a1a0a 0%, #1a3a1a 100%)'
+            : 'linear-gradient(135deg, #1a0a0a 0%, #3a1a1a 100%)',
+          primary: 'linear-gradient(45deg, #ff0080, #00ff80)',
+          secondary: 'linear-gradient(45deg, #0a0a1a, #1a1a3a)'
+        }}
+      />
     );
   }
 
@@ -628,7 +474,7 @@ const SpaceInvaders: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>

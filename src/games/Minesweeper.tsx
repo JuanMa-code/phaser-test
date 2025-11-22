@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const CELL_SIZE = 35;
 const DIFFICULTIES = {
@@ -367,244 +369,92 @@ const Minesweeper: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #c0c0c0 0%, #808080 100%)',
-        fontFamily: 'Arial, sans-serif',
-        padding: '1rem',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          maxWidth: '500px',
-          width: '95%',
-          textAlign: 'center',
-          color: 'white',
-          margin: '1rem auto'
-        }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            marginBottom: '1rem',
-            background: 'linear-gradient(45deg, #ff0000, #0000ff, #008000)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(255, 0, 0, 0.5)'
-          }}>
-            💣 MINESWEEPER
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.1rem', 
-            marginBottom: '1.5rem', 
-            opacity: 0.9,
-            lineHeight: '1.4'
-          }}>
-            ¡Encuentra todas las minas sin explotar ninguna!
-          </p>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎯 Selecciona Dificultad
-            </h3>
-            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {Object.entries(DIFFICULTIES).map(([key, config]) => (
-                <button
-                  key={key}
-                  onClick={() => setDifficulty(key as any)}
-                  style={{
-                    padding: '0.6rem 1rem',
-                    fontSize: '0.9rem',
-                    background: difficulty === key 
-                      ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
-                      : 'rgba(255, 255, 255, 0.2)',
-                    border: difficulty === key ? '2px solid #4CAF50' : '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div>{key.charAt(0).toUpperCase() + key.slice(1)}</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                    {config.cols}×{config.rows} - {config.mines} minas
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🖱️ Controles
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>� Click izquierdo: Revelar casilla</p>
-              <p style={{ marginBottom: '0.5rem' }}>🚩 Click derecho: Marcar con bandera</p>
-              <p>💡 Los números indican minas adyacentes</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.2rem',
-              padding: '0.8rem 2rem',
-              background: 'linear-gradient(45deg, #ff0000, #ff6600)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(255, 0, 0, 0.3)',
-              transition: 'all 0.3s ease',
-              transform: 'translateY(0)',
-              marginBottom: '1.5rem'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 0, 0, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 0, 0, 0.3)';
-            }}
-          >
-            💥 ¡Comenzar a Desactivar!
-          </button>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              💡 Consejos Pro
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>• Comienza por las esquinas</p>
-              <p style={{ marginBottom: '0.5rem' }}>• Usa los números como pistas</p>
-              <p>• ¡Marca las minas con banderas!</p>
-            </div>
+      <GameStartScreen
+        title="💣 Minesweeper"
+        description="¡Encuentra todas las minas sin explotar ninguna!"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "🖱️ Click izquierdo: Revelar casilla",
+              "🚩 Click derecho: Marcar con bandera",
+              "💡 Los números indican minas adyacentes",
+              "🎯 Encuentra todas las minas sin explotar ninguna"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Características",
+            items: [
+              "3 niveles de dificultad: Principiante, Intermedio, Experto",
+              "Temporizador integrado",
+              "Contador de minas",
+              "Efectos visuales clásicos"
+            ],
+            icon: "⭐"
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #c0c0c0 0%, #808080 100%)',
+          primary: 'linear-gradient(45deg, #ff0000, #ff6600)',
+          secondary: 'rgba(255, 255, 255, 0.2)',
+          accent: 'linear-gradient(45deg, #ff0000, #0000ff, #008000)',
+        }}
+      >
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h3 style={{ color: 'white', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Dificultad:</h3>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {Object.entries(DIFFICULTIES).map(([key, config]) => (
+              <button
+                key={key}
+                onClick={() => setDifficulty(key as any)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.9rem',
+                  background: difficulty === key 
+                    ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
+                    : 'rgba(255, 255, 255, 0.2)',
+                  border: difficulty === key ? '2px solid #4CAF50' : '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      </GameStartScreen>
     );
   }
 
   if (gameState === 'won' || gameState === 'lost') {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: gameState === 'won' 
-          ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)'
-          : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {gameState === 'won' ? '🏆 ¡GANASTE!' : '💥 ¡BOOM!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>⏱️ Tiempo: <strong>{time} segundos</strong></p>
-            <p>🎯 Dificultad: <strong>{difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</strong></p>
-            <p>💣 Minas: <strong>{DIFFICULTIES[difficulty].mines}</strong></p>
-            {gameState === 'won' 
-              ? <p style={{ color: '#90EE90' }}>¡Todas las minas desactivadas!</p>
-              : <p style={{ color: '#FFB6C1' }}>Una mina explotó...</p>
-            }
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #ff6600, #ff0000)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Reintentar
-            </button>
-            <button
-              onClick={() => setGameState('start')}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #808080, #c0c0c0)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'black',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={time} // Using time as score
+        isVictory={gameState === 'won'}
+        onRestart={restartGame}
+        onMenu={() => setGameState('start')}
+        theme={{
+          background: gameState === 'won' 
+            ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)'
+            : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+          primary: gameState === 'won'
+            ? 'linear-gradient(45deg, #4CAF50, #45a049)'
+            : 'linear-gradient(45deg, #f44336, #d32f2f)',
+          secondary: 'rgba(255, 255, 255, 0.2)',
+          accent: 'linear-gradient(45deg, #ffffff, #e0e0e0)',
+        }}
+        customStats={[
+          { label: 'Tiempo', value: `${time} segundos` },
+          { label: 'Dificultad', value: difficulty.charAt(0).toUpperCase() + difficulty.slice(1) },
+          { label: 'Minas', value: DIFFICULTIES[difficulty].mines }
+        ]}
+      />
     );
   }
 
@@ -615,7 +465,7 @@ const Minesweeper: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #c0c0c0 0%, #808080 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'black'
     }}>

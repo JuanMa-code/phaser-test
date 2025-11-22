@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
@@ -447,177 +449,55 @@ const Asteroids: React.FC = () => {
 
   if (!gameStarted) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #000011 0%, #001122 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          maxWidth: '600px',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-        }}>
-          <h1 style={{ 
-            fontSize: '4rem', 
-            margin: '0 0 1rem 0',
-            background: 'linear-gradient(45deg, #ffffff, #00ffff, #ffff00, #ff0080)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}>
-            🚀 ASTEROIDS
-          </h1>
-          
-          <p style={{ fontSize: '1.2rem', margin: '1rem 0', opacity: 0.9 }}>
-            ¡Navega por el espacio y destruye asteroides!
-          </p>
-          
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '1rem', 
-            margin: '2rem 0' 
-          }}>
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#00ffff' }}>🎮 Controles</h3>
-              <p>← → A D: Rotar nave</p>
-              <p>↑ W: Acelerar</p>
-              <p>Espacio: Disparar</p>
-            </div>
-            
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#ffff00' }}>💎 Puntuación</h3>
-              <p>Asteroide grande: 20 pts</p>
-              <p>Asteroide mediano: 50 pts</p>
-              <p>Asteroide pequeño: 100 pts</p>
-            </div>
-            
-            <div style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#ff0080' }}>⚡ Física Espacial</h3>
-              <p>Inercia y gravedad cero</p>
-              <p>Teletransporte en bordes</p>
-              <p>3 segundos invulnerable</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              padding: '1rem 3rem',
-              fontSize: '1.5rem',
-              background: 'linear-gradient(45deg, #00ffff, #ffff00)',
-              border: 'none',
-              borderRadius: '50px',
-              color: 'black',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              fontWeight: 'bold'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            }}
-          >
-            🌌 ¡INICIAR MISIÓN!
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🚀 ASTEROIDS"
+        description="¡Navega por el espacio y destruye asteroides!"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "← → A D: Rotar nave",
+              "↑ W: Acelerar",
+              "Espacio: Disparar"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Características",
+            items: [
+              "Inercia y gravedad cero",
+              "Teletransporte en bordes",
+              "3 segundos invulnerable"
+            ],
+            icon: "⭐"
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #000011 0%, #001122 100%)',
+          primary: '#00ffff',
+          secondary: '#ffff00',
+          accent: '#ff0080',
+        }}
+      />
     );
   }
 
   if (gameOver) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #110000 0%, #220011 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>💥 ¡MISIÓN FALLIDA!</h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>🎯 Puntuación Final: <strong>{score}</strong></p>
-            <p>🌟 Nivel Alcanzado: <strong>{level}</strong></p>
-            <p style={{ color: '#ff0080' }}>Tu nave fue destruida en el espacio...</p>
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #00ffff, #ffff00)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'black',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Nueva Misión
-            </button>
-            <button
-              onClick={() => setGameStarted(false)}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #000011, #001122)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Base Espacial
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        onRestart={restartGame}
+        onMenu={() => setGameStarted(false)}
+        theme={{
+          background: 'linear-gradient(135deg, #110000 0%, #220011 100%)',
+          primaryColor: '#00ffff',
+          secondaryColor: '#ffff00',
+          accentColor: '#ff0080',
+          titleGradient: 'linear-gradient(45deg, #ffffff, #00ffff, #ffff00, #ff0080)',
+          buttonGradient: 'linear-gradient(45deg, #00ffff, #ffff00)'
+        }}
+      />
     );
   }
 
@@ -628,7 +508,7 @@ const Asteroids: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #000011 0%, #001122 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>

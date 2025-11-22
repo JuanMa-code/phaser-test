@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 720;
 const GAME_HEIGHT = 540;
@@ -344,173 +346,83 @@ const WhacAMole: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
-        fontFamily: 'Arial, sans-serif',
-        padding: '1rem',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          maxWidth: '500px',
-          width: '95%',
-          textAlign: 'center',
-          color: 'white',
-          margin: '1rem auto'
+      <GameStartScreen
+        title="🔨 WHAC-A-MOLE"
+        description="¡Golpea a los topos antes de que se escondan!"
+        instructions={[
+          {
+            title: "Controles y Puntuación",
+            items: [
+              "🖱️ Click en los topos para golpearlos",
+              "⚡ Sistema de combos: más hits seguidos = más puntos"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Consejos Pro",
+            items: [
+              "• Mantén la vista en todo el campo",
+              "• Los combos dan puntos extra",
+              "• ¡Reacciona rápido pero con precisión!"
+            ],
+            icon: "💡"
+          }
+        ]}
+        highScore={highScore}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+          primary: 'linear-gradient(45deg, #8D6E63, #A1887F)',
+          secondary: 'rgba(255, 255, 255, 0.2)',
+          accent: 'linear-gradient(45deg, #8D6E63, #D7CCC8)',
+          text: 'white'
+        }}
+      >
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '15px',
+          padding: '1.2rem',
+          marginBottom: '1.5rem',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
         }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
+          <h3 style={{ 
+            fontSize: '1.2rem', 
             marginBottom: '1rem',
-            background: 'linear-gradient(45deg, #8D6E63, #D7CCC8)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(141, 110, 99, 0.5)'
+            color: '#fff'
           }}>
-            🔨 WHAC-A-MOLE
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.1rem', 
-            marginBottom: '1.5rem', 
-            opacity: 0.9,
-            lineHeight: '1.4'
-          }}>
-            ¡Golpea a los topos antes de que se escondan!
-          </p>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎯 Selecciona Dificultad
-            </h3>
-            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {(['easy', 'medium', 'hard'] as const).map((level) => (
-                <button
-                  key={level}
-                  onClick={() => setDifficulty(level)}
-                  style={{
-                    padding: '0.6rem 1rem',
-                    fontSize: '0.9rem',
-                    background: difficulty === level 
-                      ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
-                      : 'rgba(255, 255, 255, 0.2)',
-                    border: difficulty === level ? '2px solid #4CAF50' : '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                    transition: 'all 0.3s ease',
-                    textAlign: 'center'
-                  }}
-                >
-                  <div>{level.charAt(0).toUpperCase() + level.slice(1)}</div>
-                  <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
-                    {level === 'easy' && '2 topos max'}
-                    {level === 'medium' && '3 topos max'}
-                    {level === 'hard' && '4 topos max'}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎮 Controles y Puntuación
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>🖱️ Click en los topos para golpearlos</p>
-              <p style={{ marginBottom: '0.5rem' }}>🏆 Récord actual: <strong>{highScore}</strong></p>
-              <p>⚡ Sistema de combos: más hits seguidos = más puntos</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.2rem',
-              padding: '0.8rem 2rem',
-              background: 'linear-gradient(45deg, #8D6E63, #A1887F)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(141, 110, 99, 0.3)',
-              transition: 'all 0.3s ease',
-              transform: 'translateY(0)',
-              marginBottom: '1.5rem'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(141, 110, 99, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(141, 110, 99, 0.3)';
-            }}
-          >
-            🔨 ¡Comenzar a Golpear!
-          </button>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              💡 Consejos Pro
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>• Mantén la vista en todo el campo</p>
-              <p style={{ marginBottom: '0.5rem' }}>• Los combos dan puntos extra</p>
-              <p>• ¡Reacciona rápido pero con precisión!</p>
-            </div>
+            🎯 Selecciona Dificultad
+          </h3>
+          <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {(['easy', 'medium', 'hard'] as const).map((level) => (
+              <button
+                key={level}
+                onClick={() => setDifficulty(level)}
+                style={{
+                  padding: '0.6rem 1rem',
+                  fontSize: '0.9rem',
+                  background: difficulty === level 
+                    ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
+                    : 'rgba(255, 255, 255, 0.2)',
+                  border: difficulty === level ? '2px solid #4CAF50' : '1px solid rgba(255, 255, 255, 0.3)',
+                  borderRadius: '8px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.3s ease',
+                  textAlign: 'center'
+                }}
+              >
+                <div>{level.charAt(0).toUpperCase() + level.slice(1)}</div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                  {level === 'easy' && '2 topos max'}
+                  {level === 'medium' && '3 topos max'}
+                  {level === 'hard' && '4 topos max'}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      </GameStartScreen>
     );
   }
 
@@ -518,72 +430,27 @@ const WhacAMole: React.FC = () => {
     const isNewRecord = score === highScore && score > 0;
     
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: isNewRecord 
-          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-          : 'linear-gradient(135deg, #8D6E63 0%, #5D4037 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '⏰ ¡TIEMPO AGOTADO!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>🎯 Puntuación Final: <strong>{score}</strong></p>
-            <p>🏆 Récord: <strong>{highScore}</strong></p>
-            <p>🎮 Dificultad: <strong>{difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}</strong></p>
-            {isNewRecord && <p style={{ color: '#FFD700' }}>¡Increíble precisión con el martillo!</p>}
-            {!isNewRecord && <p style={{ color: '#D7CCC8' }}>Los topos fueron más rápidos...</p>}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #8D6E63, #A1887F)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Intentar de Nuevo
-            </button>
-            <button
-              onClick={() => setGameState('start')}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #4CAF50, #2E7D32)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        highScore={highScore}
+        isNewRecord={isNewRecord}
+        onRestart={restartGame}
+        onMenu={() => setGameState('start')}
+        theme={{
+          background: isNewRecord 
+            ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
+            : 'linear-gradient(135deg, #8D6E63 0%, #5D4037 100%)',
+          primary: 'linear-gradient(45deg, #8D6E63, #A1887F)',
+          secondary: '#4CAF50',
+          accent: isNewRecord 
+            ? 'linear-gradient(45deg, #FFFFFF, #FFFF00)' 
+            : 'linear-gradient(45deg, #FFFFFF, #D7CCC8)',
+        }}
+        customStats={[
+          { label: 'Dificultad', value: difficulty.charAt(0).toUpperCase() + difficulty.slice(1) },
+          { label: 'Mensaje', value: isNewRecord ? '¡Increíble precisión con el martillo!' : 'Los topos fueron más rápidos...' }
+        ]}
+      />
     );
   }
 
@@ -594,7 +461,7 @@ const WhacAMole: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>

@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 480;
 const GAME_HEIGHT = 480;
@@ -471,101 +473,42 @@ const UnblockMe: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        background: 'linear-gradient(45deg, #8B4513 0%, #CD853F 50%, #DEB887 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          maxWidth: '600px',
-          width: '90%',
-          padding: '2rem',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '20px',
-          backdropFilter: 'blur(15px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          margin: '2rem auto'
-        }}>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            marginBottom: '1.5rem',
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-            color: '#FFD700'
-          }}>
-            🧩 UNBLOCK ME
-          </h1>
-          
-          <div style={{
-            background: 'rgba(139, 69, 19, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(139, 69, 19, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#FFD700', fontSize: '1.3rem' }}>🎯 Objetivo</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>Mueve el bloque rojo 🟥 hasta la salida usando el menor número de movimientos</p>
-          </div>
-
-          <div style={{
-            background: 'rgba(139, 69, 19, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(139, 69, 19, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#FFD700', fontSize: '1.3rem' }}>🕹️ Controles</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• 🖱️ Click y arrastra los bloques</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• ↔️ Bloques horizontales: izq/der</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• ↕️ Bloques verticales: arriba/abajo</p>
-          </div>
-
-          <div style={{
-            background: 'rgba(139, 69, 19, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            border: '1px solid rgba(139, 69, 19, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#FFD700', fontSize: '1.3rem' }}>💡 Estrategia</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Planifica antes de mover • Libera espacio primero • Piensa varios pasos adelante</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem', color: '#DEB887' }}>{LEVELS.length} niveles de dificultad creciente</p>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              padding: '1rem 3rem',
-              fontSize: '1.5rem',
-              background: 'linear-gradient(45deg, #8B4513, #CD853F)',
-              border: 'none',
-              borderRadius: '50px',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              fontWeight: 'bold'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            }}
-          >
-            🧩 ¡COMENZAR PUZZLE!
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🧩 UNBLOCK ME"
+        description="Mueve el bloque rojo 🟥 hasta la salida usando el menor número de movimientos"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "🖱️ Click y arrastra los bloques",
+              "↔️ Bloques horizontales: izq/der",
+              "↕️ Bloques verticales: arriba/abajo"
+            ],
+            icon: "🕹️"
+          },
+          {
+            title: "Estrategia",
+            items: [
+              "• Planifica antes de mover",
+              "• Libera espacio primero",
+              "• Piensa varios pasos adelante"
+            ],
+            icon: "💡"
+          }
+        ]}
+        features={[
+          `${LEVELS.length} niveles de dificultad creciente`
+        ]}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(45deg, #8B4513 0%, #CD853F 50%, #DEB887 100%)',
+          primaryColor: '#8B4513',
+          secondaryColor: '#CD853F',
+          accentColor: '#FFD700',
+          titleGradient: 'linear-gradient(45deg, #FFD700, #FFA500)',
+          buttonGradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
+        }}
+      />
     );
   }
 
@@ -573,69 +516,49 @@ const UnblockMe: React.FC = () => {
     const isNewRecord = moves < bestMoves[currentLevel];
     
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #32CD32 0%, #98FB98 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '🎉 ¡NIVEL COMPLETADO!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
+      <GameOverScreen
+        title={isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '🎉 ¡NIVEL COMPLETADO!'}
+        score={moves}
+        onRestart={restartLevel}
+        onMenu={() => setGameState('start')}
+        theme={{
+          background: 'linear-gradient(135deg, #32CD32 0%, #98FB98 100%)',
+          primaryColor: '#32CD32',
+          secondaryColor: '#98FB98',
+          accentColor: '#FFD700',
+          titleGradient: 'linear-gradient(45deg, #FFFFFF, #FFFF00)',
+          buttonGradient: 'linear-gradient(45deg, #32CD32, #98FB98)'
+        }}
+        customContent={
+          <div style={{ fontSize: '1.2rem', margin: '1rem 0' }}>
             <p>📊 Nivel {currentLevel + 1} completado</p>
             <p>🎯 Movimientos usados: <strong>{moves}</strong></p>
             <p>🏆 Tu mejor récord: <strong>{Math.min(moves, bestMoves[currentLevel])}</strong></p>
-            {isNewRecord && <p style={{ color: '#FFD700' }}>¡Has superado tu récord anterior!</p>}
+            {isNewRecord && <p style={{ color: '#FFD700', fontWeight: 'bold', marginTop: '0.5rem' }}>¡Has superado tu récord anterior!</p>}
           </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={nextLevel}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #32CD32, #98FB98)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              ➡️ Siguiente Nivel
-            </button>
-            <button
-              onClick={restartLevel}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #8B4513, #CD853F)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Repetir Nivel
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+        customButtons={
+          <button
+            onClick={nextLevel}
+            style={{
+              padding: '0.8rem 2rem',
+              fontSize: '1.2rem',
+              background: 'linear-gradient(45deg, #32CD32, #98FB98)',
+              border: 'none',
+              borderRadius: '12px',
+              color: 'white',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+              transition: 'all 0.3s ease',
+              marginBottom: '1rem',
+              width: '100%'
+            }}
+          >
+            ➡️ Siguiente Nivel
+          </button>
+        }
+      />
     );
   }
 
@@ -643,68 +566,27 @@ const UnblockMe: React.FC = () => {
     const totalMoves = bestMoves.reduce((sum: number, moves: number) => sum + (moves === Infinity ? 0 : moves), 0);
     
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            🏆 ¡JUEGO COMPLETADO!
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
+      <GameOverScreen
+        title="🏆 ¡JUEGO COMPLETADO!"
+        score={totalMoves}
+        onRestart={resetProgress}
+        onMenu={() => setGameState('start')}
+        theme={{
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          primaryColor: '#FFD700',
+          secondaryColor: '#FFA500',
+          accentColor: '#FFFFFF',
+          titleGradient: 'linear-gradient(45deg, #FFFFFF, #FFFFE0)',
+          buttonGradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
+        }}
+        customContent={
+          <div style={{ fontSize: '1.2rem', margin: '1rem 0' }}>
             <p>🎯 Has completado todos los {LEVELS.length} niveles</p>
             <p>🏆 Total de movimientos óptimos: <strong>{totalMoves}</strong></p>
             <p>🧠 ¡Eres un maestro del puzzle!</p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={resetProgress}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #8B4513, #CD853F)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Jugar de Nuevo
-            </button>
-            <button
-              onClick={() => setGameState('start')}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #4169E1, #87CEEB)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
@@ -715,7 +597,7 @@ const UnblockMe: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #8B4513 0%, #CD853F 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>

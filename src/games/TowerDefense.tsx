@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 // Agregar estilos CSS personalizados
 const styles = `
@@ -76,7 +78,7 @@ const styles = `
       #be185d 75%,   /* pink-800 */
       #881337 100%   /* rose-900 */
     );
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     overflow: hidden;
   }
@@ -178,7 +180,7 @@ const styles = `
       #ca8a04 75%,   /* yellow-600 */
       #eab308 100%   /* yellow-500 */
     );
-    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     display: flex;
     align-items: center;
@@ -192,7 +194,7 @@ const styles = `
       #1e293b 50%,   /* slate-800 */
       #1e40af 100%   /* blue-800 */
     );
-    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -1385,337 +1387,59 @@ const TowerDefense: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div className="tower-defense-bg scrollable-hidden" style={{ 
-        display: 'flex', 
-        alignItems: 'flex-start', 
-        justifyContent: 'center', 
-        padding: '2rem',
-        minHeight: '100vh',
-        overflow: 'auto'
-      }}>
-        {/* Efectos de fondo con CSS personalizado */}
-        <div className="glow-orb-1 animate-pulse-glow"></div>
-        <div className="glow-orb-2 animate-pulse-glow" style={{ animationDelay: '1s' }}></div>
-        <div className="glow-orb-3 animate-pulse-glow" style={{ animationDelay: '2s' }}></div>
-        
-        {/* Partículas flotantes */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-          <div className="floating-particle animate-ping-float" style={{ 
-            top: '25%', left: '25%', width: '8px', height: '8px', animationDelay: '0s' 
-          }}></div>
-          <div className="floating-particle animate-ping-float" style={{ 
-            top: '75%', left: '33%', width: '4px', height: '4px', animationDelay: '1s' 
-          }}></div>
-          <div className="floating-particle animate-ping-float" style={{ 
-            top: '50%', right: '25%', width: '12px', height: '12px', animationDelay: '2s' 
-          }}></div>
-          <div className="floating-particle animate-ping-float" style={{ 
-            top: '33%', right: '33%', width: '4px', height: '4px', animationDelay: '3s' 
-          }}></div>
-          <div className="floating-particle animate-ping-float" style={{ 
-            bottom: '25%', left: '50%', width: '8px', height: '8px', animationDelay: '4s' 
-          }}></div>
-        </div>
-        
-        <div className="glass-panel animate-fade-in scrollable-hidden" style={{ 
-          borderRadius: '1.5rem', 
-          padding: '2rem', 
-          maxWidth: '32rem', 
-          width: '100%',
-          position: 'relative',
-          zIndex: 10,
-          margin: '2rem 0',
-          maxHeight: 'calc(100vh - 4rem)',
-          overflow: 'auto'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <h1 className="animate-bounce-slow" style={{ 
-              fontSize: '3rem', 
-              fontWeight: 'bold', 
-              color: 'white', 
-              marginBottom: '0.75rem',
-              textShadow: '0 10px 20px rgba(0,0,0,0.5)'
-            }}>
-              🏰 Tower Defense
-            </h1>
-            <p style={{ 
-              fontSize: '1.125rem', 
-              color: 'rgba(255, 255, 255, 0.8)', 
-              fontWeight: '500' 
-            }}>
-              Defiende tu reino con torres estratégicas
-            </p>
-            <div style={{ 
-              marginTop: '1rem', 
-              display: 'flex', 
-              justifyContent: 'center' 
-            }}>
-              <div style={{ 
-                width: '6rem', 
-                height: '4px', 
-                background: 'linear-gradient(to right, #a855f7, #ec4899)', 
-                borderRadius: '9999px' 
-              }}></div>
-            </div>
-          </div>
-
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-            gap: '1rem', 
-            marginBottom: '1.5rem' 
-          }}>
-            <div className="glass-card" style={{ borderRadius: '1rem', padding: '1.25rem' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🎯</div>
-              <h3 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: 'bold', 
-                color: 'white', 
-                marginBottom: '0.5rem' 
-              }}>
-                Torres Especiales
-              </h3>
-              <p style={{ 
-                color: 'rgba(255, 255, 255, 0.7)', 
-                fontSize: '0.875rem' 
-              }}>
-                4 tipos únicos: Cañón, Láser, Hielo y Veneno con habilidades especiales
-              </p>
-            </div>
-
-            <div className="glass-card" style={{ borderRadius: '1rem', padding: '1.25rem' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>👾</div>
-              <h3 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: 'bold', 
-                color: 'white', 
-                marginBottom: '0.5rem' 
-              }}>
-                Enemigos Variados
-              </h3>
-              <p style={{ 
-                color: 'rgba(255, 255, 255, 0.7)', 
-                fontSize: '0.875rem' 
-              }}>
-                Normales, rápidos, tanques y jefes con diferentes características
-              </p>
-            </div>
-
-            <div className="glass-card" style={{ borderRadius: '1rem', padding: '1.25rem' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>⚡</div>
-              <h3 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: 'bold', 
-                color: 'white', 
-                marginBottom: '0.5rem' 
-              }}>
-                Efectos Visuales
-              </h3>
-              <p style={{ 
-                color: 'rgba(255, 255, 255, 0.7)', 
-                fontSize: '0.875rem' 
-              }}>
-                Explosiones, partículas y efectos especiales espectaculares
-              </p>
-            </div>
-
-            <div className="glass-card" style={{ borderRadius: '1rem', padding: '1.25rem' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🏆</div>
-              <h3 style={{ 
-                fontSize: '1.125rem', 
-                fontWeight: 'bold', 
-                color: 'white', 
-                marginBottom: '0.5rem' 
-              }}>
-                Estrategia Profunda
-              </h3>
-              <p style={{ 
-                color: 'rgba(255, 255, 255, 0.7)', 
-                fontSize: '0.875rem' 
-              }}>
-                Mejora torres, gestiona recursos y planifica tu defensa
-              </p>
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ marginBottom: '1rem' }}>
-              <button
-                onClick={startGame}
-                className="glow-button"
-                style={{ 
-                  padding: '1rem 2rem', 
-                  color: 'white', 
-                  fontWeight: 'bold', 
-                  fontSize: '1.25rem', 
-                  borderRadius: '1rem',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  margin: '0 auto'
-                }}
-              >
-                <span>🚀</span>
-                <span>Comenzar Defensa</span>
-              </button>
-            </div>
-            
-            <div style={{ 
-              color: 'rgba(255, 255, 255, 0.6)', 
-              fontSize: '1rem',
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '0.75rem',
-              padding: '0.75rem',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              marginBottom: '1rem'
-            }}>
-              Record: <span style={{ 
-                color: '#fbbf24', 
-                fontWeight: 'bold', 
-                fontSize: '1.25rem' 
-              }}>
-                {highScore.toLocaleString()}
-              </span> puntos
-              {highScore > 0 && <span style={{ marginLeft: '0.5rem' }}>🏆</span>}
-            </div>
-
-            <div className="glass-panel" style={{ 
-              borderRadius: '0.75rem', 
-              padding: '1.25rem'
-            }}>
-              <h4 style={{ 
-                color: 'white', 
-                fontWeight: 'bold', 
-                marginBottom: '0.75rem', 
-                fontSize: '1.125rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}>
-                <span>🎮</span>
-                <span>Controles</span>
-              </h4>
-              <div style={{ 
-                color: 'rgba(255, 255, 255, 0.7)', 
-                fontSize: '0.875rem'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.75rem', 
-                  padding: '0.5rem', 
-                  borderRadius: '0.5rem', 
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '1.125rem' }}>🖱️</span>
-                  <span>Click en espacios vacíos para construir torres</span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.75rem', 
-                  padding: '0.5rem', 
-                  borderRadius: '0.5rem', 
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  marginBottom: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '1.125rem' }}>🎯</span>
-                  <span>Click en torres para seleccionar y mejorar</span>
-                </div>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '0.75rem', 
-                  padding: '0.5rem', 
-                  borderRadius: '0.5rem', 
-                  background: 'rgba(255, 255, 255, 0.05)'
-                }}>
-                  <span style={{ fontSize: '1.125rem' }}>💰</span>
-                  <span>Gestiona oro y vidas estratégicamente</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🏰 Tower Defense"
+        description="Defiende tu reino con torres estratégicas"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "🖱️ Click en espacios vacíos para construir torres",
+              "🎯 Click en torres para seleccionar y mejorar",
+              "💰 Gestiona oro y vidas estratégicamente"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Características",
+            items: [
+              "4 tipos únicos: Cañón, Láser, Hielo y Veneno",
+              "Enemigos variados: Normales, rápidos, tanques y jefes",
+              "Efectos visuales espectaculares",
+              "Estrategia profunda de gestión de recursos"
+            ],
+            icon: "⭐"
+          }
+        ]}
+        highScore={highScore}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #581c87 25%, #7c2d12 50%, #be185d 75%, #881337 100%)',
+          primary: 'linear-gradient(135deg, #7c3aed, #ec4899)',
+          secondary: '#ec4899',
+          accent: 'linear-gradient(45deg, #a855f7, #ec4899)',
+        }}
+      />
     );
   }
 
   if (gameState === 'gameOver') {
     return (
-      <div className="game-over-bg">
-        <div className="glass-panel" style={{ 
-          borderRadius: '1.5rem', 
-          padding: '3rem', 
-          maxWidth: '28rem', 
-          width: '100%',
-          textAlign: 'center' 
-        }}>
-          <div style={{ fontSize: '5rem', marginBottom: '1.5rem' }}>💥</div>
-          <h2 style={{ 
-            fontSize: '3rem', 
-            fontWeight: 'bold', 
-            color: 'white', 
-            marginBottom: '1rem' 
-          }}>
-            ¡Derrota!
-          </h2>
-          <p style={{ 
-            fontSize: '1.5rem', 
-            color: 'rgba(255, 255, 255, 0.8)', 
-            marginBottom: '0.5rem' 
-          }}>
-            Tu reino ha caído
-          </p>
-          <p style={{ 
-            fontSize: '2.5rem', 
-            fontWeight: 'bold', 
-            color: '#fbbf24', 
-            marginBottom: '1.5rem' 
-          }}>
-            {score.toLocaleString()} puntos
-          </p>
-          
-          {score > highScore && (
-            <div style={{ 
-              color: '#4ade80', 
-              fontSize: '1.25rem', 
-              marginBottom: '1rem', 
-              fontWeight: 'bold' 
-            }}>
-              🎉 ¡Nuevo Record!
-            </div>
-          )}
-          
-          <button
-            onClick={resetGame}
-            className="glow-button"
-            style={{ 
-              padding: '1rem 2rem', 
-              color: 'white', 
-              fontWeight: 'bold', 
-              fontSize: '1.25rem', 
-              borderRadius: '1rem',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              margin: '0 auto'
-            }}
-          >
-            <span>🔄</span>
-            <span>Intentar de Nuevo</span>
-          </button>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        highScore={highScore}
+        onRestart={startGame}
+        onMenu={resetGame}
+        theme={{
+          background: 'linear-gradient(135deg, #7f1d1d 0%, #ea580c 25%, #d97706 50%, #ca8a04 75%, #eab308 100%)',
+          primary: 'linear-gradient(135deg, #ea580c, #d97706)',
+          secondary: '#eab308',
+          accent: 'linear-gradient(45deg, #fbbf24, #ea580c)',
+        }}
+        customStats={[
+          { label: 'Mensaje', value: 'Tu reino ha caído' }
+        ]}
+      />
     );
   }
 

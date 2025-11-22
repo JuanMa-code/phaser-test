@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
@@ -260,200 +262,54 @@ const Arkanoid: React.FC = () => {
 
   if (!gameStarted) {
     return (
-      <div style={{
-        textAlign: 'center',
-        padding: '2rem',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ 
-            color: '#ffffff', 
-            fontSize: '4rem', 
-            marginBottom: '1rem',
-            textShadow: '0 4px 20px rgba(0,0,0,0.3)',
-            background: 'linear-gradient(135deg, #feca57 0%, #ff9ff3 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            🧱 ARKANOID
-          </h1>
-          
-          <div style={{
-            color: 'rgba(255,255,255,0.9)',
-            fontSize: '1.2rem',
-            marginBottom: '2rem',
-            lineHeight: '1.6'
-          }}>
-            <p style={{ marginBottom: '1rem' }}>¡Destruye todos los bloques!</p>
-            <div style={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>🎮 <strong>Controles:</strong></p>
-              <p style={{ marginBottom: '0.5rem' }}>• A - Mover izquierda</p>
-              <p style={{ marginBottom: '0.5rem' }}>• D - Mover derecha</p>
-              <p>• Evita que la pelota caiga</p>
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '1rem',
-              marginBottom: '2rem',
-              fontSize: '1rem'
-            }}>
-              <div style={{ 
-                background: 'rgba(76, 175, 80, 0.2)',
-                borderRadius: '10px',
-                padding: '1rem'
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎯</div>
-                <div>3 Vidas</div>
-              </div>
-              <div style={{ 
-                background: 'rgba(255, 193, 7, 0.2)',
-                borderRadius: '10px',
-                padding: '1rem'
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⭐</div>
-                <div>10 pts/bloque</div>
-              </div>
-              <div style={{ 
-                background: 'rgba(156, 39, 176, 0.2)',
-                borderRadius: '10px',
-                padding: '1rem'
-              }}>
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🚀</div>
-                <div>Física realista</div>
-              </div>
-            </div>
-          </div>
-          
-          <button 
-            onClick={startGame}
-            style={{
-              fontSize: '1.3rem',
-              padding: '1.2rem 2.5rem',
-              background: 'linear-gradient(145deg, #ff6b6b 0%, #feca57 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 8px 25px rgba(255, 107, 107, 0.4)',
-              transition: 'all 0.3s ease',
-              transform: 'scale(1)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = '0 12px 35px rgba(255, 107, 107, 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 8px 25px rgba(255, 107, 107, 0.4)';
-            }}
-          >
-            ▶️ Comenzar Aventura
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🧱 ARKANOID"
+        description="¡Destruye todos los bloques!"
+        instructions={[
+          {
+            title: 'Controles',
+            items: [
+              'A: Mover izquierda',
+              'D: Mover derecha',
+              'Evita que la pelota caiga'
+            ],
+            icon: '🎮'
+          },
+          {
+            title: 'Reglas',
+            items: [
+              '3 Vidas',
+              '10 pts/bloque',
+              'Física realista'
+            ],
+            icon: '📋'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          primary: '#feca57',
+          secondary: '#ff6b6b',
+          accent: '#ff9ff3',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
+        }}
+      />
     );
   }
 
-  if (gameOver) {
+  if (gameOver || victory) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1 style={{ color: '#ff4757', fontSize: '3rem', marginBottom: '1rem' }}>💥 GAME OVER</h1>
-        <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>Puntuación Final: {score}</p>
-        <button 
-          onClick={restartGame}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#4dabf7',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginRight: '1rem',
-            fontWeight: 'bold'
-          }}
-        >
-          🔄 Jugar de Nuevo
-        </button>
-        <button 
-          onClick={() => window.history.back()}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#747d8c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          🏠 Volver al Menú
-        </button>
-      </div>
-    );
-  }
-
-  if (victory) {
-    return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1 style={{ color: '#00ff88', fontSize: '3rem', marginBottom: '1rem' }}>🎉 ¡VICTORIA!</h1>
-        <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
-          ¡Completaste el nivel! Puntuación: {score}
-        </p>
-        <button 
-          onClick={restartGame}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#00ff88',
-            color: 'black',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginRight: '1rem',
-            fontWeight: 'bold'
-          }}
-        >
-          🎮 Jugar de Nuevo
-        </button>
-        <button 
-          onClick={() => window.history.back()}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#747d8c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          🏠 Volver al Menú
-        </button>
-      </div>
+      <GameOverScreen
+        score={score}
+        isVictory={victory}
+        onRestart={restartGame}
+        onMenu={() => window.history.back()}
+        theme={{
+          primary: '#feca57',
+          secondary: '#ff6b6b',
+          accent: '#ff9ff3',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
+        }}
+      />
     );
   }
 

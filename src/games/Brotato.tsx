@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 1000;
 const GAME_HEIGHT = 700;
@@ -971,7 +973,7 @@ const Brotato: React.FC = () => {
 
   const restartGame = () => {
     setGameOver(false);
-    setShowInstructions(true);
+    setShowInstructions(false);
     setScore(0);
     gameRef.current.currentScore = 0;
     gameRef.current.enemies = [];
@@ -1005,173 +1007,55 @@ const Brotato: React.FC = () => {
 
   if (showInstructions) {
     return (
-      <div style={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        fontFamily: 'Arial, sans-serif'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: '20px',
-          padding: '2rem 3rem 3rem 3rem',
-          maxWidth: '600px',
-          width: '100%',
-          textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-          maxHeight: '90vh',
-          overflowY: 'auto'
-        }}>
-          <h1 style={{ 
-            color: '#4dabf7', 
-            fontSize: '2.5rem', 
-            marginBottom: '1.5rem',
-            marginTop: '1rem',
-            textShadow: '0 0 20px rgba(77, 171, 247, 0.5)'
-          }}>
-            🥔 Brotato Style
-          </h1>
-          
-          <div style={{ 
-            color: '#ffffff', 
-            fontSize: '1rem', 
-            lineHeight: '1.5',
-            marginBottom: '2rem',
-            textAlign: 'left'
-          }}>
-            <h3 style={{ color: '#feca57', marginBottom: '0.8rem', fontSize: '1.1rem' }}>🎯 Objetivo:</h3>
-            <p style={{ marginBottom: '1.2rem' }}>Sobrevive el mayor tiempo posible eliminando oleadas de enemigos y mejorando tus habilidades.</p>
-            
-            <h3 style={{ color: '#feca57', marginBottom: '0.8rem', fontSize: '1.1rem' }}>🎮 Controles:</h3>
-            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.2rem' }}>
-              <li style={{ marginBottom: '0.4rem' }}>🔹 <strong>WASD</strong> - Mover jugador</li>
-              <li style={{ marginBottom: '0.4rem' }}>🔹 <strong>Mouse</strong> - Apuntar (disparo automático)</li>
-            </ul>
-
-            <h3 style={{ color: '#feca57', marginBottom: '0.8rem', fontSize: '1.1rem' }}>🏆 Mecánicas:</h3>
-            <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.2rem' }}>
-              <li style={{ marginBottom: '0.4rem' }}>⚡ <strong>Niveles</strong> - Gana EXP eliminando enemigos</li>
-              <li style={{ marginBottom: '0.4rem' }}>💎 <strong>Power-ups</strong> - Recoge mejoras (salud, daño, escudo, multidisparo)</li>
-              <li style={{ marginBottom: '0.4rem' }}>🎯 <strong>Críticos</strong> - Disparos que hacen más daño</li>
-              <li style={{ marginBottom: '0.4rem' }}>🔥 <strong>Combos</strong> - Elimina enemigos consecutivamente</li>
-              <li style={{ marginBottom: '0.4rem' }}>🛡️ <strong>Escudo</strong> - Protección temporal contra daño</li>
-            </ul>
-
-            <h3 style={{ color: '#feca57', marginBottom: '0.8rem', fontSize: '1.1rem' }}>👹 Tipos de Enemigos:</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              <li style={{ marginBottom: '0.4rem' }}>🔴 <strong>Normal</strong> - Enemigo básico</li>
-              <li style={{ marginBottom: '0.4rem' }}>💨 <strong>Rápido</strong> - Se mueve muy rápido pero tiene menos vida</li>
-              <li style={{ marginBottom: '0.4rem' }}>🛡️ <strong>Tanque</strong> - Lento pero con mucha vida y daño</li>
-              <li style={{ marginBottom: '0.4rem' }}>💥 <strong>Bomber</strong> - Hace mucho daño al contacto</li>
-            </ul>
-          </div>
-
-          <div style={{ 
-            display: 'flex', 
-            gap: '1rem', 
-            justifyContent: 'center', 
-            flexWrap: 'wrap',
-            marginTop: '1.5rem',
-            paddingTop: '1rem'
-          }}>
-            <button 
-              onClick={() => setShowInstructions(false)}
-              style={{
-                fontSize: '1.2rem',
-                padding: '1rem 2rem',
-                background: 'linear-gradient(45deg, #4dabf7, #74b9ff)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(77, 171, 247, 0.4)',
-                transition: 'all 0.3s ease',
-                minWidth: '150px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(77, 171, 247, 0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(77, 171, 247, 0.4)';
-              }}
-            >
-              🎮 Jugar
-            </button>
-            <button 
-              onClick={() => window.history.back()}
-              style={{
-                fontSize: '1.2rem',
-                padding: '1rem 2rem',
-                background: 'linear-gradient(45deg, #747d8c, #57606f)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                boxShadow: '0 4px 15px rgba(116, 125, 140, 0.4)',
-                transition: 'all 0.3s ease',
-                minWidth: '150px'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 6px 20px rgba(116, 125, 140, 0.6)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 15px rgba(116, 125, 140, 0.4)';
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🥔 Brotato Style"
+        description="Sobrevive el mayor tiempo posible eliminando oleadas de enemigos y mejorando tus habilidades."
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "WASD: Mover jugador",
+              "Mouse: Apuntar (disparo automático)"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Características",
+            items: [
+              "Niveles: Gana EXP eliminando enemigos",
+              "Power-ups: Recoge mejoras (salud, daño, escudo, multidisparo)",
+              "Críticos: Disparos que hacen más daño",
+              "Combos: Elimina enemigos consecutivamente",
+              "Escudo: Protección temporal contra daño"
+            ],
+            icon: "⭐"
+          }
+        ]}
+        theme={{
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          primary: '#4dabf7',
+          secondary: '#feca57',
+          accent: '#ff4757',
+        }}
+      />
     );
   }
 
   if (gameOver) {
     return (
-      <div style={{ textAlign: 'center', padding: '2rem' }}>
-        <h1 style={{ color: '#ff4757', fontSize: '3rem', marginBottom: '1rem' }}>GAME OVER</h1>
-        <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>Final Score: {score}</p>
-        <button 
-          onClick={restartGame}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#4dabf7',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginRight: '1rem'
-          }}
-        >
-          Play Again
-        </button>
-        <button 
-          onClick={() => window.history.back()}
-          style={{
-            fontSize: '1.2rem',
-            padding: '1rem 2rem',
-            backgroundColor: '#747d8c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer'
-          }}
-        >
-          Back to Menu
-        </button>
-      </div>
+      <GameOverScreen
+        score={score}
+        onRestart={restartGame}
+        onMenu={() => window.history.back()}
+        theme={{
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)',
+          primaryColor: '#4dabf7',
+          secondaryColor: '#feca57',
+          accentColor: '#ff4757',
+          titleGradient: 'linear-gradient(45deg, #4dabf7, #74b9ff)',
+          buttonGradient: 'linear-gradient(45deg, #4dabf7, #74b9ff)'
+        }}
+      />
     );
   }
 

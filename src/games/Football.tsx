@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 interface Player {
   id: number;
@@ -874,72 +876,10 @@ const Football: React.FC = () => {
       ctx.fillText(gameStateRef.current.countdownValue.toString(), FIELD_WIDTH / 2, FIELD_HEIGHT / 2 + 40);
     }
     
-    // Mostrar mensaje de finalización del partido
-    if (gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2) {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-      ctx.fillRect(0, 0, FIELD_WIDTH, FIELD_HEIGHT);
-      
-      // Título "PARTIDO TERMINADO"
-      ctx.fillStyle = '#FFD700';
-      ctx.font = 'bold 60px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('¡PARTIDO TERMINADO!', FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 120);
-      
-      // Mostrar resultado final
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 48px Arial';
-      const winner = gameStateRef.current.blueScore > gameStateRef.current.redScore ? 
-        'GANÓ EQUIPO AZUL' : 
-        gameStateRef.current.redScore > gameStateRef.current.blueScore ? 
-        'GANÓ EQUIPO ROJO' : 
-        'EMPATE';
-      ctx.fillText(winner, FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 60);
-      
-      // Mostrar marcador final
-      ctx.font = 'bold 36px Arial';
-      ctx.fillText(`Resultado Final: ${gameStateRef.current.blueScore} - ${gameStateRef.current.redScore}`, 
-                   FIELD_WIDTH / 2, FIELD_HEIGHT / 2 - 10);
-      
-      // Botón Reiniciar
-      const restartButtonX = FIELD_WIDTH / 2 - 140;
-      const restartButtonY = FIELD_HEIGHT / 2 + 30;
-      const buttonWidth = 140;
-      const buttonHeight = 50;
-      
-      ctx.fillStyle = '#4CAF50';
-      ctx.fillRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
-      ctx.strokeStyle = '#45A049';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(restartButtonX, restartButtonY, buttonWidth, buttonHeight);
-      
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('🔄 REINICIAR', restartButtonX + buttonWidth/2, restartButtonY + buttonHeight/2 + 6);
-      
-      // Botón Menú
-      const menuButtonX = FIELD_WIDTH / 2 + 10;
-      const menuButtonY = FIELD_HEIGHT / 2 + 30;
-      const menuButtonWidth = 120;
-      const menuButtonHeight = 50;
-      
-      ctx.fillStyle = '#2196F3';
-      ctx.fillRect(menuButtonX, menuButtonY, menuButtonWidth, menuButtonHeight);
-      ctx.strokeStyle = '#1976D2';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(menuButtonX, menuButtonY, menuButtonWidth, menuButtonHeight);
-      
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('🏠 MENÚ', menuButtonX + menuButtonWidth/2, menuButtonY + menuButtonHeight/2 + 6);
-      
-      // Instrucciones para el usuario
-      ctx.font = 'bold 18px Arial';
-      ctx.fillStyle = '#FFFF88';
-      ctx.fillText('Haz clic en los botones o presiona R para Reiniciar | M para Menú', FIELD_WIDTH / 2, FIELD_HEIGHT / 2 + 120);
-    }
-    
     // Continuar el loop siempre para poder mostrar los mensajes
-    animationRef.current = requestAnimationFrame(gameLoop);
+    if (!(gameStateRef.current.timeLeft <= 0 && gameStateRef.current.currentHalf >= 2)) {
+        animationRef.current = requestAnimationFrame(gameLoop);
+    }
   }, []);
 
   // Iniciar el juego
@@ -1280,59 +1220,44 @@ const Football: React.FC = () => {
 
   if (showInstructions) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 50%, #66bb6a 100%)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        fontFamily: 'Arial, sans-serif',
-        padding: '20px'
-      }}>
+      <GameStartScreen
+        title="⚽ FÚTBOL"
+        description="¡Controla a tu jugador y ayuda a tu equipo a marcar goles!"
+        instructions={[
+          {
+            title: 'Controles',
+            items: ['WASD / Flechas: Mover jugador'],
+            icon: '🎮'
+          },
+          {
+            title: 'Reglas',
+            items: [
+              'Acércate a la pelota para patearla',
+              'Tu jugador tiene borde amarillo',
+              'El equipo azul ataca hacia la derecha'
+            ],
+            icon: '📋'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          primary: '#4caf50',
+          secondary: '#2e7d32',
+          accent: '#66bb6a',
+          background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 50%, #66bb6a 100%)'
+        }}
+      >
         <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          borderRadius: '20px',
-          padding: '40px',
-          maxWidth: '600px',
-          textAlign: 'center',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
-        }}>
-          <h1 style={{
-            fontSize: '2.5rem',
-            color: '#2e7d32',
-            marginBottom: '30px',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
-          }}>
-            ⚽ FÚTBOL
-          </h1>
-          
-          <div style={{
-            textAlign: 'left',
-            marginBottom: '30px',
-            fontSize: '1.1rem',
-            lineHeight: '1.6'
-          }}>
-            <h3 style={{ color: '#1976d2', marginBottom: '15px' }}>🎮 CONTROLES:</h3>
-            <p><strong>WASD</strong> o <strong>Flechas</strong> - Mover jugador</p>
-            <p><strong>Objetivo:</strong> Controla a tu jugador y ayuda a tu equipo a marcar goles</p>
-            
-            <h3 style={{ color: '#1976d2', marginTop: '25px', marginBottom: '15px' }}>⚽ REGLAS:</h3>
-            <p>• Acércate a la pelota para tocarla y patearla</p>
-            <p>• Tu jugador tiene borde amarillo</p>
-            <p>• El equipo azul ataca hacia la derecha</p>
-            <p>• Los demás jugadores son controlados por IA</p>
-          </div>
-          
-          <div style={{
             marginBottom: '30px',
             padding: '20px',
-            background: '#f5f5f5',
-            borderRadius: '10px'
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
-            <h3 style={{ color: '#1976d2', marginBottom: '15px' }}>👤 SELECCIONA TU JUGADOR:</h3>
+            <h3 style={{ color: 'white', marginBottom: '15px' }}>👤 SELECCIONA TU JUGADOR:</h3>
             
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold', color: 'white' }}>
                 Jugador del Equipo Azul:
               </label>
               <select 
@@ -1343,7 +1268,8 @@ const Football: React.FC = () => {
                   fontSize: '16px',
                   borderRadius: '5px',
                   border: '2px solid #ddd',
-                  width: '100%'
+                  width: '100%',
+                  background: 'rgba(255, 255, 255, 0.9)'
                 }}
               >
                 <option value={0}>Portero (GK)</option>
@@ -1355,35 +1281,35 @@ const Football: React.FC = () => {
               </select>
             </div>
           </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.3rem',
-              padding: '15px 40px',
-              background: 'linear-gradient(145deg, #4caf50, #45a049)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '25px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 8px 20px rgba(76, 175, 80, 0.4)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 12px 25px rgba(76, 175, 80, 0.5)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.4)';
-            }}
-          >
-            🚀 ¡COMENZAR PARTIDO!
-          </button>
-        </div>
-      </div>
+      </GameStartScreen>
     );
+  }
+
+  if (gameState.timeLeft <= 0 && gameState.currentHalf >= 2) {
+      const winner = gameState.blueScore > gameState.redScore ? 
+        'GANÓ EQUIPO AZUL' : 
+        gameState.redScore > gameState.blueScore ? 
+        'GANÓ EQUIPO ROJO' : 
+        'EMPATE';
+      
+      return (
+        <GameOverScreen
+            score={gameState.blueScore} // Showing blue score as main score
+            onRestart={restartGame}
+            onMenu={goToMenu}
+            theme={{
+                primary: '#4caf50',
+                secondary: '#2e7d32',
+                accent: '#66bb6a',
+                background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)'
+            }}
+            customStats={[
+                { label: 'Equipo Azul', value: gameState.blueScore },
+                { label: 'Equipo Rojo', value: gameState.redScore },
+                { label: 'Resultado', value: winner }
+            ]}
+        />
+      );
   }
 
   return (
@@ -1391,7 +1317,7 @@ const Football: React.FC = () => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       background: 'linear-gradient(135deg, #2e7d32 0%, #4caf50 100%)',
       padding: '20px'
     }}>

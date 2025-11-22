@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 // Tipos y utilidades
 type Cell = number; // 0 = vacío
@@ -140,7 +142,7 @@ function generatePuzzle(difficulty: Difficulty): { puzzle: Board; solution: Boar
 
 // Estilos reutilizables
 const containerStyle: React.CSSProperties = {
-  minHeight: '100vh',
+  minHeight: '100dvh',
   background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
   display: 'flex',
   flexDirection: 'column',
@@ -232,6 +234,7 @@ const infoPill: React.CSSProperties = {
 };
 
 const Sudoku: React.FC = () => {
+  const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver'>('start');
   const [difficulty, setDifficulty] = useState<Difficulty>('Medio');
   const [puzzle, setPuzzle] = useState<Board>(() => emptyBoard());
   const [solution, setSolution] = useState<Board>(() => emptyBoard());
@@ -241,19 +244,13 @@ const Sudoku: React.FC = () => {
   const [showConflicts, setShowConflicts] = useState(true);
   const [startTs, setStartTs] = useState<number | null>(null);
   const [nowTs, setNowTs] = useState<number>(Date.now());
-  const [won, setWon] = useState(false);
-
-  // Generar al montar
-  useEffect(() => {
-    newGame('Medio');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Timer simple
   useEffect(() => {
+    if (gameState !== 'playing') return;
     const t = setInterval(() => setNowTs(Date.now()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [gameState]);
 
   const elapsed = useMemo(() => {
     if (!startTs) return '00:00';
@@ -263,6 +260,11 @@ const Sudoku: React.FC = () => {
     return `${mm}:${ss}`;
   }, [nowTs, startTs]);
 
+  function startGame() {
+    newGame(difficulty);
+    setGameState('playing');
+  }
+
   function newGame(d: Difficulty) {
     const { puzzle, solution } = generatePuzzle(d);
     const mask = puzzle.map(row => row.map(v => v !== 0));
@@ -271,7 +273,6 @@ const Sudoku: React.FC = () => {
     setUserBoard(cloneBoard(puzzle));
     setGivenMask(mask);
     setSelected(null);
-    setWon(false);
     setDifficulty(d);
     setStartTs(Date.now());
   }
@@ -313,7 +314,7 @@ const Sudoku: React.FC = () => {
 
   // Detección de victoria
   useEffect(() => {
-    if (won) return;
+    if (gameState !== 'playing') return;
     // todas llenas y sin conflictos y coincide con solución
     for (let r = 0; r < SIZE; r++) {
       for (let c = 0; c < SIZE; c++) {
@@ -323,11 +324,12 @@ const Sudoku: React.FC = () => {
       }
     }
     // si llegó aquí, ganó
-    setWon(true);
-  }, [userBoard, solution, won]);
+    setGameState('gameOver');
+  }, [userBoard, solution, gameState]);
 
   // Teclado
   useEffect(() => {
+    if (gameState !== 'playing') return;
     const onKey = (e: KeyboardEvent) => {
       if (!selected) return;
       const k = e.key;
@@ -354,30 +356,99 @@ const Sudoku: React.FC = () => {
     return new Set([v]);
   }, [selected, userBoard]);
 
+  if (gameState === 'start') {
+    return (
+      <GameStartScreen
+        title="🧩 Sudoku"
+        description="El clásico juego de lógica y números"
+        instructions={[
+          {
+            title: "Cómo Jugar",
+            items: [
+              "🖱️ Click en una celda para seleccionarla",
+              "⌨️ Usa el teclado (1-9) o el panel numérico",
+              "🚫 Evita repetir números en filas, columnas o cajas",
+              "💡 Usa las pistas si te atascas"
+            ],
+            icon: "🎮"
+          },
+          {
+            title: "Características",
+            items: [
+              "4 niveles de dificultad: Fácil, Medio, Difícil, Experto",
+              "Sistema de detección de conflictos",
+              "Temporizador integrado",
+              "Generación infinita de puzzles"
+            ],
+            icon: "⭐"
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+          primary: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+          secondary: '#a5b4fc',
+          accent: 'linear-gradient(45deg, #60a5fa, #a5b4fc)',
+        }}
+      >
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ color: 'white', marginRight: '1rem', fontSize: '1.1rem' }}>Dificultad:</label>
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value as Difficulty)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '0.5rem',
+              background: 'rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              fontSize: '1rem',
+              cursor: 'pointer'
+            }}
+          >
+            <option value="Fácil" style={{ color: 'black' }}>Fácil</option>
+            <option value="Medio" style={{ color: 'black' }}>Medio</option>
+            <option value="Difícil" style={{ color: 'black' }}>Difícil</option>
+            <option value="Experto" style={{ color: 'black' }}>Experto</option>
+          </select>
+        </div>
+      </GameStartScreen>
+    );
+  }
+
+  if (gameState === 'gameOver') {
+    return (
+      <GameOverScreen
+        score={0} // Sudoku doesn't have a score, but we can show time
+        isVictory={true}
+        onRestart={startGame}
+        onMenu={() => setGameState('start')}
+        theme={{
+          background: 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+          primary: 'linear-gradient(135deg, #3b82f6, #6366f1)',
+          secondary: '#a5b4fc',
+          accent: 'linear-gradient(45deg, #60a5fa, #a5b4fc)',
+        }}
+        customStats={[
+          { label: 'Tiempo', value: elapsed }
+        ]}
+      />
+    );
+  }
+
   return (
     <div style={containerStyle}>
       <h1 style={{ margin: 0, marginBottom: 12, fontWeight: 800, letterSpacing: 1 }}>🧩 Sudoku</h1>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
         <div style={infoPill}>⏱️ Tiempo: <strong>{elapsed}</strong></div>
-        <div style={infoPill}>Dificultad:&nbsp;
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-            style={{ ...selectStyle, padding: '6px 10px' }}
-          >
-            <option value="Fácil">Fácil</option>
-            <option value="Medio">Medio</option>
-            <option value="Difícil">Difícil</option>
-            <option value="Experto">Experto</option>
-          </select>
-        </div>
-        <button style={buttonStyle} onClick={() => newGame(difficulty)}>🔄 Nueva partida</button>
+        <div style={infoPill}>Dificultad: <strong>{difficulty}</strong></div>
+        <button style={buttonStyle} onClick={() => newGame(difficulty)}>🔄 Reiniciar</button>
         <button style={buttonStyle} onClick={() => setShowConflicts(v => !v)}>
           {showConflicts ? '🙈 Ocultar' : '🔎 Mostrar'} conflictos
         </button>
         <button style={buttonStyle} onClick={() => setUserBoard(cloneBoard(solution))}>💡 Resolver</button>
-        <button style={buttonStyle} onClick={() => setUserBoard(cloneBoard(puzzle))}>↩️ Reiniciar</button>
+        <button style={buttonStyle} onClick={() => setGameState('start')}>🏠 Menú</button>
       </div>
 
       <div style={{ ...panelStyle, padding: 16 }}>
@@ -418,22 +489,6 @@ const Sudoku: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {won && (
-        <div style={{
-          position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.6)'
-        }}>
-          <div style={{ ...panelStyle, padding: 24, textAlign: 'center' }}>
-            <h2 style={{ marginTop: 0 }}>🎉 ¡Sudoku completado!</h2>
-            <p>Tiempo: <strong>{elapsed}</strong></p>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button style={buttonStyle} onClick={() => newGame(difficulty)}>▶️ Jugar de nuevo</button>
-              <button style={buttonStyle} onClick={() => window.history.back()}>🏠 Menú</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div style={{ marginTop: 16, opacity: 0.8 }}>Consejos: Usa el teclado (1-9, ←→↑↓, Supr) o el keypad. Evita conflictos para avanzar más rápido.</div>
     </div>

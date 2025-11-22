@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
@@ -558,227 +560,69 @@ const DoodleJump: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div style={{ 
-        minHeight: '100vh', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #87CEEB 0%, #98FB98 100%)',
-        fontFamily: 'Arial, sans-serif',
-        padding: '1rem',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.15)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '2rem',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          maxWidth: '500px',
-          width: '95%',
-          textAlign: 'center',
-          color: 'white',
-          margin: '1rem auto'
-        }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            marginBottom: '1rem',
-            background: 'linear-gradient(45deg, #32CD32, #98FB98, #87CEEB)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 30px rgba(50, 205, 50, 0.5)'
-          }}>
-            🦘 DOODLE JUMP
-          </h1>
-          
-          <p style={{ 
-            fontSize: '1.1rem', 
-            marginBottom: '1.5rem', 
-            opacity: 0.9,
-            lineHeight: '1.4'
-          }}>
-            ¡Salta tan alto como puedas sin caer!
-          </p>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎮 Controles
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>⬅️➡️ Flechas o A/D: Mover horizontalmente</p>
-              <p style={{ marginBottom: '0.5rem' }}>🔄 Los bordes te teletransportan</p>
-              <p>🏆 Récord actual: <strong>{highScore}</strong> puntos</p>
-            </div>
-          </div>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🪜 Tipos de Plataformas
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>🟢 Normales: Salto estándar</p>
-              <p style={{ marginBottom: '0.5rem' }}>🔵 Móviles: Se mueven de lado a lado</p>
-              <p style={{ marginBottom: '0.5rem' }}>🟠 Resorte: Super salto hacia arriba</p>
-              <p>🟤 Frágiles: Se rompen al tocarlas</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              fontSize: '1.2rem',
-              padding: '0.8rem 2rem',
-              background: 'linear-gradient(45deg, #32CD32, #98FB98)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(50, 205, 50, 0.3)',
-              transition: 'all 0.3s ease',
-              transform: 'translateY(0)',
-              marginBottom: '1.5rem'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(50, 205, 50, 0.4)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(50, 205, 50, 0.3)';
-            }}
-          >
-            🦘 ¡Comenzar a Saltar!
-          </button>
-
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '1.2rem',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              marginBottom: '1rem',
-              color: '#fff'
-            }}>
-              🎁 Power-ups Especiales
-            </h3>
-            <div style={{ 
-              fontSize: '0.95rem',
-              textAlign: 'left',
-              lineHeight: '1.4'
-            }}>
-              <p style={{ marginBottom: '0.5rem' }}>🚀 Jetpack: Vuelo temporal automático</p>
-              <p style={{ marginBottom: '0.5rem' }}>⚡ Súper Salto: Impulso extra potente</p>
-              <p>🛡️ Escudo: Protección contra caídas</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🦘 DOODLE JUMP"
+        description="¡Salta tan alto como puedas sin caer!"
+        instructions={[
+          {
+            title: "Controles",
+            items: [
+              "⬅️➡️ Flechas o A/D: Mover horizontalmente",
+              "🔄 Los bordes te teletransportan"
+            ],
+            icon: '🎮'
+          },
+          {
+            title: "Tipos de Plataformas",
+            items: [
+              "🟢 Normales: Salto estándar",
+              "🔵 Móviles: Se mueven de lado a lado",
+              "🟠 Resorte: Super salto hacia arriba",
+              "🟤 Frágiles: Se rompen al tocarlas"
+            ],
+            icon: '🧱'
+          },
+          {
+            title: "Power-ups Especiales",
+            items: [
+              "🚀 Jetpack: Vuelo temporal automático",
+              "⚡ Súper Salto: Impulso extra potente",
+              "🛡️ Escudo: Protección contra caídas"
+            ],
+            icon: '⚡'
+          }
+        ]}
+        onStart={startGame}
+        highScore={highScore}
+        theme={{
+          background: 'linear-gradient(135deg, #87CEEB 0%, #98FB98 100%)',
+          accent: 'linear-gradient(45deg, #32CD32, #98FB98, #87CEEB)',
+          primary: 'linear-gradient(45deg, #32CD32, #98FB98)'
+        }}
+      />
     );
   }
 
   if (gameState === 'gameOver') {
     const isNewRecord = score === highScore && score > 0;
-    
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: isNewRecord 
-          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-          : 'linear-gradient(135deg, #DC143C 0%, #B22222 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '💔 ¡CAÍDA LIBRE!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>🎯 Puntuación Final: <strong>{score}</strong></p>
-            <p>📏 Altura Máxima: <strong>{Math.floor(score * 10)}m</strong></p>
-            <p>🏆 Récord Personal: <strong>{highScore}</strong></p>
-            {isNewRecord && <p style={{ color: '#FFD700' }}>¡Has alcanzado las nubes!</p>}
-            {!isNewRecord && <p style={{ color: '#FFB6C1' }}>¡Sigue saltando hacia las estrellas!</p>}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #32CD32, #98FB98)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Saltar de Nuevo
-            </button>
-            <button
-              onClick={() => setGameState('start')}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #87CEEB, #4169E1)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        highScore={highScore}
+        onRestart={restartGame}
+        onMenu={() => setGameState('start')}
+        isNewRecord={isNewRecord}
+        customStats={[
+          { label: 'Altura Máxima', value: `${Math.floor(score * 10)}m` }
+        ]}
+        theme={{
+          background: isNewRecord 
+            ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
+            : 'linear-gradient(135deg, #DC143C 0%, #B22222 100%)',
+          primary: 'linear-gradient(45deg, #32CD32, #98FB98)',
+          secondary: 'linear-gradient(45deg, #87CEEB, #4169E1)'
+        }}
+      />
     );
   }
 
@@ -789,7 +633,7 @@ const DoodleJump: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #87CEEB 0%, #98FB98 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>

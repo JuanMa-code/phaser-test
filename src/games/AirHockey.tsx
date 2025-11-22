@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const AirHockey: React.FC = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -412,175 +414,65 @@ const AirHockey: React.FC = () => {
 
   if (gameState === 'instructions') {
     return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        background: 'linear-gradient(45deg, #0077be 0%, #00a0d6 50%, #4fc3f7 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          maxWidth: '600px',
-          width: '90%',
-          padding: '2rem',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '20px',
-          backdropFilter: 'blur(15px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          margin: '2rem auto'
-        }}>
-          <h1 style={{ 
-            fontSize: '2.5rem', 
-            marginBottom: '1.5rem',
-            textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-            color: '#e3f2fd'
-          }}>
-            🏒 AIR HOCKEY
-          </h1>
-          
-          <div style={{
-            background: 'rgba(0, 119, 190, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(0, 119, 190, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#e3f2fd', fontSize: '1.3rem' }}>🎯 Objetivo</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>Golpea el disco negro hacia la portería del oponente para anotar goles</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>¡Primer jugador en anotar 7 goles gana!</p>
-          </div>
-
-          <div style={{
-            background: 'rgba(0, 119, 190, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem',
-            border: '1px solid rgba(0, 119, 190, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#e3f2fd', fontSize: '1.3rem' }}>🕹️ Controles</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Mueve el mouse para controlar tu paddle verde</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Solo puedes moverte en tu mitad de la mesa</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Golpea el disco para cambiar su dirección</p>
-          </div>
-
-          <div style={{
-            background: 'rgba(0, 119, 190, 0.2)',
-            borderRadius: '15px',
-            padding: '1.5rem',
-            marginBottom: '2rem',
-            border: '1px solid rgba(0, 119, 190, 0.4)'
-          }}>
-            <h3 style={{ margin: '0 0 1rem 0', color: '#e3f2fd', fontSize: '1.3rem' }}>💡 Estrategia</h3>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Defiende tu portería cuando el disco se acerque</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• Aprovecha los rebotes de las paredes</p>
-            <p style={{ margin: '0.5rem 0', fontSize: '1rem' }}>• El bot rojo es tu oponente - ¡será difícil vencerlo!</p>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              padding: '1rem 2.5rem',
-              fontSize: '1.3rem',
-              background: 'linear-gradient(45deg, #0077be, #00a0d6)',
-              border: 'none',
-              borderRadius: '50px',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              fontWeight: 'bold'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            }}
-          >
-            🏒 ¡JUGAR AIR HOCKEY!
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🏒 AIR HOCKEY"
+        description="¡Golpea el disco hacia la portería del oponente!"
+        instructions={[
+          {
+            title: 'Objetivo',
+            items: [
+              'Golpea el disco negro hacia la portería del oponente',
+              '¡Primer jugador en anotar 7 goles gana!'
+            ],
+            icon: '🎯'
+          },
+          {
+            title: 'Controles',
+            items: [
+              'Mueve el mouse para controlar tu paddle verde',
+              'Solo puedes moverte en tu mitad de la mesa'
+            ],
+            icon: '🕹️'
+          },
+          {
+            title: 'Estrategia',
+            items: [
+              'Defiende tu portería',
+              'Aprovecha los rebotes',
+              'El bot rojo es tu oponente'
+            ],
+            icon: '💡'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          primary: '#0077be',
+          secondary: '#00a0d6',
+          accent: '#4fc3f7',
+          background: 'linear-gradient(45deg, #0077be 0%, #00a0d6 50%, #4fc3f7 100%)'
+        }}
+      />
     );
   }
 
   if (gameState === 'gameOver') {
     return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        background: 'linear-gradient(45deg, #0077be 0%, #00a0d6 50%, #4fc3f7 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white'
-      }}>
-        <div style={{
-          maxWidth: '500px',
-          width: '90%',
-          padding: '3rem',
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.15)',
-          borderRadius: '20px',
-          backdropFilter: 'blur(15px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
-        }}>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            marginBottom: '2rem',
-            color: winner === 'player' ? '#4caf50' : '#f44336'
-          }}>
-            {winner === 'player' ? '🏆 ¡VICTORIA!' : '😢 DERROTA'}
-          </h1>
-          
-          <div style={{
-            fontSize: '2rem',
-            marginBottom: '2rem',
-            padding: '1rem',
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px'
-          }}>
-            <p>Jugador: {playerScore}</p>
-            <p>Bot: {botScore}</p>
-          </div>
-          
-          <button
-            onClick={resetGame}
-            style={{
-              padding: '1rem 2rem',
-              fontSize: '1.2rem',
-              background: 'linear-gradient(45deg, #0077be, #00a0d6)',
-              border: 'none',
-              borderRadius: '50px',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              fontWeight: 'bold'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            }}
-          >
-            🔄 Jugar de Nuevo
-          </button>
-        </div>
-      </div>
+      <GameOverScreen
+        score={playerScore}
+        onRestart={startGame}
+        onMenu={resetGame}
+        theme={{
+          primary: '#0077be',
+          secondary: '#00a0d6',
+          accent: '#4fc3f7',
+          background: 'linear-gradient(45deg, #0077be 0%, #00a0d6 50%, #4fc3f7 100%)'
+        }}
+        customStats={[
+          { label: 'Jugador', value: playerScore },
+          { label: 'Bot', value: botScore },
+          { label: 'Resultado', value: winner === 'player' ? '¡VICTORIA!' : 'DERROTA' }
+        ]}
+      />
     );
   }
 

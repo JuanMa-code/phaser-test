@@ -1,5 +1,7 @@
 import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import GameStartScreen from '../components/GameStartScreen';
+import GameOverScreen from '../components/GameOverScreen';
 
 const GAME_WIDTH = 520;
 const GAME_HEIGHT = 480;
@@ -517,189 +519,60 @@ const Frogger: React.FC = () => {
 
   if (gameState === 'start') {
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.9)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          maxWidth: '600px',
-          textAlign: 'center',
-          border: '3px solid #32CD32',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          color: '#228B22'
-        }}>
-          <h1 style={{ 
-            fontSize: '4rem', 
-            margin: '0 0 1rem 0',
-            background: 'linear-gradient(45deg, #32CD32, #228B22, #90EE90, #00FF00)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-          }}>
-            🐸 FROGGER
-          </h1>
-          
-          <p style={{ fontSize: '1.2rem', margin: '1rem 0', opacity: 0.8 }}>
-            ¡Ayuda a la rana a cruzar el tráfico y el río!
-          </p>
-          
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-            gap: '1rem', 
-            margin: '2rem 0' 
-          }}>
-            <div style={{
-              background: 'rgba(50, 205, 50, 0.1)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(50, 205, 50, 0.3)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#32CD32' }}>🎮 Controles</h3>
-              <p>↑/W: Arriba</p>
-              <p>↓/S: Abajo</p>
-              <p>←/A: Izquierda</p>
-              <p>→/D: Derecha</p>
-            </div>
-            
-            <div style={{
-              background: 'rgba(50, 205, 50, 0.1)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(50, 205, 50, 0.3)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#4169E1' }}>🏆 Puntuación</h3>
-              <p>Récord actual: <strong>{highScore}</strong></p>
-              <p>Avanzar: 10 puntos</p>
-              <p>Llegar a meta: 100 puntos</p>
-              <p>Completar nivel: 200 puntos</p>
-            </div>
-            
-            <div style={{
-              background: 'rgba(50, 205, 50, 0.1)',
-              borderRadius: '15px',
-              padding: '1.5rem',
-              border: '1px solid rgba(50, 205, 50, 0.3)'
-            }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: '#FF4444' }}>⚠️ Peligros</h3>
-              <p>🚗 Evita los coches</p>
-              <p>🌊 Usa troncos y tortugas</p>
-              <p>🎯 Llega a las 5 metas</p>
-            </div>
-          </div>
-          
-          <button
-            onClick={startGame}
-            style={{
-              padding: '1rem 3rem',
-              fontSize: '1.5rem',
-              background: 'linear-gradient(45deg, #32CD32, #228B22)',
-              border: 'none',
-              borderRadius: '50px',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-              fontWeight: 'bold'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-            }}
-          >
-            🐸 ¡COMENZAR A SALTAR!
-          </button>
-        </div>
-      </div>
+      <GameStartScreen
+        title="🐸 FROGGER"
+        description="¡Ayuda a la rana a cruzar el tráfico y el río!"
+        highScore={highScore}
+        instructions={[
+          {
+            title: 'Controles',
+            items: [
+              "↑/W: Arriba",
+              "↓/S: Abajo",
+              "←/A: Izquierda",
+              "→/D: Derecha"
+            ],
+            icon: '🎮'
+          },
+          {
+            title: 'Objetivo',
+            items: [
+              "🚗 Evita los coches",
+              "🌊 Usa troncos y tortugas",
+              "🎯 Llega a las 5 metas"
+            ],
+            icon: '⚠️'
+          }
+        ]}
+        onStart={startGame}
+        theme={{
+          primary: '#32CD32',
+          secondary: '#228B22',
+          accent: '#90EE90',
+          background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
+        }}
+      />
     );
   }
 
   if (gameState === 'gameOver') {
-    const isNewRecord = score === highScore && score > 0;
-    
     return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        minHeight: '100vh',
-        background: isNewRecord 
-          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-          : 'linear-gradient(135deg, #DC143C 0%, #B22222 100%)',
-        fontFamily: 'Arial, sans-serif',
-        color: 'white',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '3rem',
-          textAlign: 'center',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 1rem 0' }}>
-            {isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '💀 ¡GAME OVER!'}
-          </h1>
-          <div style={{ fontSize: '1.5rem', margin: '2rem 0' }}>
-            <p>🎯 Puntuación Final: <strong>{score}</strong></p>
-            <p>🏆 Récord: <strong>{highScore}</strong></p>
-            <p>🎮 Nivel Alcanzado: <strong>{level}</strong></p>
-            <p>💚 Vidas Restantes: <strong>{lives}</strong></p>
-            {isNewRecord && <p style={{ color: '#FFD700' }}>¡Increíble hazaña de la rana!</p>}
-            {!isNewRecord && <p style={{ color: '#FFB6C1' }}>La rana no logró cruzar...</p>}
-          </div>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <button
-              onClick={restartGame}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #32CD32, #228B22)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🔄 Intentar de Nuevo
-            </button>
-            <button
-              onClick={() => setGameState('start')}
-              style={{
-                padding: '1rem 2rem',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(45deg, #228B22, #006400)',
-                border: 'none',
-                borderRadius: '50px',
-                color: 'white',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 Menú Principal
-            </button>
-          </div>
-        </div>
-      </div>
+      <GameOverScreen
+        score={score}
+        highScore={highScore}
+        onRestart={restartGame}
+        onMenu={() => setGameState('start')}
+        theme={{
+          primary: '#32CD32',
+          secondary: '#228B22',
+          accent: '#90EE90',
+          background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
+        }}
+        customStats={[
+          { label: 'Nivel Alcanzado', value: level },
+          { label: 'Vidas Restantes', value: lives }
+        ]}
+      />
     );
   }
 
@@ -710,7 +583,7 @@ const Frogger: React.FC = () => {
       alignItems: 'center', 
       padding: '20px',
       background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)',
-      minHeight: '100vh',
+      minHeight: '100dvh',
       fontFamily: 'Arial, sans-serif',
       color: 'white'
     }}>
