@@ -47,6 +47,8 @@ interface Enemy {
   speed: number;
   damage: number;
   color: number;
+  sprite?: PIXI.Graphics;
+  text?: PIXI.Text;
 }
 
 interface Bullet {
@@ -57,6 +59,7 @@ interface Bullet {
   radius: number;
   isCrit: boolean;
   piercing: number;
+  sprite?: PIXI.Graphics;
 }
 
 interface PowerUp {
@@ -67,6 +70,7 @@ interface PowerUp {
   size: number;
   active: boolean;
   timer: number;
+  sprite?: PIXI.Graphics;
 }
 
 interface Particle {
@@ -79,6 +83,7 @@ interface Particle {
   color: number;
   size: number;
   alpha: number;
+  sprite?: PIXI.Graphics;
 }
 
 interface DamageText {
@@ -88,6 +93,7 @@ interface DamageText {
   timer: number;
   color: number;
   isCrit: boolean;
+  sprite?: PIXI.Text;
 }
 
 const Brotato: React.FC = () => {
@@ -151,377 +157,138 @@ const Brotato: React.FC = () => {
       containerRef.current.appendChild(app.view);
     }
 
-    function drawGame() {
-      // Clear stage
-      app.stage.removeChildren();
+    // Layers
+    const gameLayer = new PIXI.Container();
+    const uiLayer = new PIXI.Container();
+    app.stage.addChild(gameLayer);
+    app.stage.addChild(uiLayer);
 
-      // Draw UI background header
-      const uiBackground = new PIXI.Graphics();
-      uiBackground.beginFill(0x0f0f23);
-      uiBackground.drawRect(0, 0, GAME_WIDTH, UI_HEIGHT);
-      uiBackground.endFill();
-      
-      // Add separator line
-      uiBackground.lineStyle(2, 0x4dabf7);
-      uiBackground.moveTo(0, UI_HEIGHT);
-      uiBackground.lineTo(GAME_WIDTH, UI_HEIGHT);
-      app.stage.addChild(uiBackground);
+    // UI Background
+    const uiBackground = new PIXI.Graphics();
+    uiBackground.beginFill(0x0f0f23);
+    uiBackground.drawRect(0, 0, GAME_WIDTH, UI_HEIGHT);
+    uiBackground.endFill();
+    uiBackground.lineStyle(2, 0x4dabf7);
+    uiBackground.moveTo(0, UI_HEIGHT);
+    uiBackground.lineTo(GAME_WIDTH, UI_HEIGHT);
+    uiLayer.addChild(uiBackground);
 
-      // === UI ELEMENTS IN HEADER ===
-      
-      // Left column - Score and Level
-      const scoreText = new PIXI.Text(`Score: ${gameRef.current.currentScore}`, {
-        fill: 0xffffff,
-        fontSize: 18,
-        fontWeight: 'bold'
-      });
-      scoreText.x = 20;
-      scoreText.y = 15;
-      app.stage.addChild(scoreText);
+    // UI Elements
+    const scoreText = new PIXI.Text('', { fill: 0xffffff, fontSize: 18, fontWeight: 'bold' });
+    scoreText.x = 20; scoreText.y = 15;
+    uiLayer.addChild(scoreText);
 
-      const levelText = new PIXI.Text(`Level: ${gameRef.current.player.level}`, {
-        fill: 0xfeca57,
-        fontSize: 16,
-        fontWeight: 'bold'
-      });
-      levelText.x = 20;
-      levelText.y = 40;
-      app.stage.addChild(levelText);
+    const levelText = new PIXI.Text('', { fill: 0xfeca57, fontSize: 16, fontWeight: 'bold' });
+    levelText.x = 20; levelText.y = 40;
+    uiLayer.addChild(levelText);
 
-      const waveText = new PIXI.Text(`Wave: ${gameRef.current.wave}`, {
-        fill: 0x00ffff,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      waveText.x = 20;
-      waveText.y = 65;
-      app.stage.addChild(waveText);
+    const waveText = new PIXI.Text('', { fill: 0x00ffff, fontSize: 14, fontWeight: 'bold' });
+    waveText.x = 20; waveText.y = 65;
+    uiLayer.addChild(waveText);
 
-      const killsText = new PIXI.Text(`Kills: ${gameRef.current.enemiesKilled}`, {
-        fill: 0xffffff,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      killsText.x = 20;
-      killsText.y = 90;
-      app.stage.addChild(killsText);
+    const killsText = new PIXI.Text('', { fill: 0xffffff, fontSize: 14, fontWeight: 'bold' });
+    killsText.x = 20; killsText.y = 90;
+    uiLayer.addChild(killsText);
 
-      // Center - Health and Shield bars
-      const healthBarWidth = 200;
-      const healthBarHeight = 16;
-      const healthPercentage = gameRef.current.player.health / gameRef.current.player.maxHealth;
-      
-      // Health bar background
-      const healthBg = new PIXI.Graphics();
-      healthBg.beginFill(0x333333);
-      healthBg.drawRect(250, 25, healthBarWidth, healthBarHeight);
-      healthBg.endFill();
-      app.stage.addChild(healthBg);
-      
-      // Health bar
-      const healthBar = new PIXI.Graphics();
-      healthBar.beginFill(0x00ff00);
-      healthBar.drawRect(250, 25, healthBarWidth * healthPercentage, healthBarHeight);
-      healthBar.endFill();
-      app.stage.addChild(healthBar);
-      
-      const healthText = new PIXI.Text(`HP: ${gameRef.current.player.health}/${gameRef.current.player.maxHealth}`, {
-        fill: 0xffffff,
-        fontSize: 12,
-        fontWeight: 'bold'
-      });
-      healthText.x = 255;
-      healthText.y = 27;
-      app.stage.addChild(healthText);
+    // Health Bar
+    const healthBarBg = new PIXI.Graphics();
+    healthBarBg.beginFill(0x333333);
+    healthBarBg.drawRect(250, 25, 200, 16);
+    healthBarBg.endFill();
+    uiLayer.addChild(healthBarBg);
+    const healthBar = new PIXI.Graphics();
+    uiLayer.addChild(healthBar);
+    const healthText = new PIXI.Text('', { fill: 0xffffff, fontSize: 12, fontWeight: 'bold' });
+    healthText.x = 255; healthText.y = 27;
+    uiLayer.addChild(healthText);
 
-      // Shield bar (if player has shield)
-      if (gameRef.current.player.shield > 0) {
-        const shieldBar = new PIXI.Graphics();
-        shieldBar.beginFill(0x00ffff);
-        shieldBar.drawRect(250, 45, (gameRef.current.player.shield / 100) * healthBarWidth, 8);
-        shieldBar.endFill();
-        app.stage.addChild(shieldBar);
+    // Shield Bar
+    const shieldBar = new PIXI.Graphics();
+    uiLayer.addChild(shieldBar);
+    const shieldText = new PIXI.Text('', { fill: 0x00ffff, fontSize: 10, fontWeight: 'bold' });
+    shieldText.x = 255; shieldText.y = 45;
+    uiLayer.addChild(shieldText);
+
+    // Exp Bar
+    const expBarBg = new PIXI.Graphics();
+    expBarBg.beginFill(0x333333);
+    expBarBg.drawRect(250, 70, 200, 12);
+    expBarBg.endFill();
+    uiLayer.addChild(expBarBg);
+    const expBar = new PIXI.Graphics();
+    uiLayer.addChild(expBar);
+    const expText = new PIXI.Text('', { fill: 0xfeca57, fontSize: 10, fontWeight: 'bold' });
+    expText.x = 255; expText.y = 85;
+    uiLayer.addChild(expText);
+
+    // Stats
+    const damageText = new PIXI.Text('', { fill: 0xff6b6b, fontSize: 14, fontWeight: 'bold' });
+    damageText.x = 520; damageText.y = 15;
+    uiLayer.addChild(damageText);
+    const multishotText = new PIXI.Text('', { fill: 0xffff00, fontSize: 14, fontWeight: 'bold' });
+    multishotText.x = 520; multishotText.y = 35;
+    uiLayer.addChild(multishotText);
+    const critText = new PIXI.Text('', { fill: 0xffaa00, fontSize: 14, fontWeight: 'bold' });
+    critText.x = 520; critText.y = 55;
+    uiLayer.addChild(critText);
+    const critDamageText = new PIXI.Text('', { fill: 0xffaa00, fontSize: 14, fontWeight: 'bold' });
+    critDamageText.x = 520; critDamageText.y = 75;
+    uiLayer.addChild(critDamageText);
+
+    const timeText = new PIXI.Text('', { fill: 0xffffff, fontSize: 14, fontWeight: 'bold' });
+    timeText.x = GAME_WIDTH - 120; timeText.y = 15;
+    uiLayer.addChild(timeText);
+
+    const comboText = new PIXI.Text('', { fill: 0xff00ff, fontSize: 16, fontWeight: 'bold' });
+    comboText.x = GAME_WIDTH - 150; comboText.y = 40;
+    uiLayer.addChild(comboText);
+
+    // Player Sprite
+    const playerSprite = new PIXI.Graphics();
+    gameLayer.addChild(playerSprite);
+
+    function updateUI() {
+        const player = gameRef.current.player;
+        scoreText.text = `Score: ${gameRef.current.currentScore}`;
+        levelText.text = `Level: ${player.level}`;
+        waveText.text = `Wave: ${gameRef.current.wave}`;
+        killsText.text = `Kills: ${gameRef.current.enemiesKilled}`;
         
-        const shieldText = new PIXI.Text(`Shield: ${gameRef.current.player.shield}`, {
-          fill: 0x00ffff,
-          fontSize: 10,
-          fontWeight: 'bold'
-        });
-        shieldText.x = 255;
-        shieldText.y = 45;
-        app.stage.addChild(shieldText);
-      }
+        healthBar.clear();
+        healthBar.beginFill(0x00ff00);
+        healthBar.drawRect(250, 25, 200 * (player.health / player.maxHealth), 16);
+        healthBar.endFill();
+        healthText.text = `HP: ${Math.ceil(player.health)}/${player.maxHealth}`;
 
-      // Experience bar
-      const expBarWidth = 200;
-      const expBarHeight = 12;
-      const expPercentage = gameRef.current.player.exp / gameRef.current.player.expToNext;
-      
-      const expBarBg = new PIXI.Graphics();
-      expBarBg.beginFill(0x333333);
-      expBarBg.drawRect(250, 70, expBarWidth, expBarHeight);
-      expBarBg.endFill();
-      app.stage.addChild(expBarBg);
-      
-      const expBar = new PIXI.Graphics();
-      expBar.beginFill(0xfeca57);
-      expBar.drawRect(250, 70, expBarWidth * expPercentage, expBarHeight);
-      expBar.endFill();
-      app.stage.addChild(expBar);
-      
-      const expText = new PIXI.Text(`EXP: ${gameRef.current.player.exp}/${gameRef.current.player.expToNext}`, {
-        fill: 0xfeca57,
-        fontSize: 10,
-        fontWeight: 'bold'
-      });
-      expText.x = 255;
-      expText.y = 85;
-      app.stage.addChild(expText);
-
-      // Right column - Stats
-      const damageText = new PIXI.Text(`Damage: ${gameRef.current.player.damage.toFixed(1)}`, {
-        fill: 0xff6b6b,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      damageText.x = 520;
-      damageText.y = 15;
-      app.stage.addChild(damageText);
-
-      const multishotText = new PIXI.Text(`Multishot: ${gameRef.current.player.multiShot}`, {
-        fill: 0xffff00,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      multishotText.x = 520;
-      multishotText.y = 35;
-      app.stage.addChild(multishotText);
-
-      const critText = new PIXI.Text(`Crit: ${(gameRef.current.player.critChance * 100).toFixed(1)}%`, {
-        fill: 0xffaa00,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      critText.x = 520;
-      critText.y = 55;
-      app.stage.addChild(critText);
-
-      const critDamageText = new PIXI.Text(`Crit Dmg: ${gameRef.current.player.critDamage.toFixed(1)}x`, {
-        fill: 0xffaa00,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      critDamageText.x = 520;
-      critDamageText.y = 75;
-      app.stage.addChild(critDamageText);
-
-      // Far right - Time and combo
-      const timeText = new PIXI.Text(`Time: ${Math.floor(gameRef.current.gameTime / 60)}s`, {
-        fill: 0xffffff,
-        fontSize: 14,
-        fontWeight: 'bold'
-      });
-      timeText.x = GAME_WIDTH - 120;
-      timeText.y = 15;
-      app.stage.addChild(timeText);
-
-      // Combo counter in header
-      if (gameRef.current.combo > 1) {
-        const comboText = new PIXI.Text(`COMBO x${gameRef.current.combo}!`, {
-          fill: 0xff00ff,
-          fontSize: 16,
-          fontWeight: 'bold'
-        });
-        comboText.x = GAME_WIDTH - 150;
-        comboText.y = 40;
-        app.stage.addChild(comboText);
-      }
-
-      // === GAME AREA (below UI) ===
-      
-      // Draw particles (behind everything)
-      gameRef.current.particles.forEach(particle => {
-        // Only draw if in game area
-        if (particle.y > UI_HEIGHT) {
-          const particleGraphic = new PIXI.Graphics();
-          particleGraphic.beginFill(particle.color);
-          particleGraphic.drawCircle(particle.x, particle.y, particle.size);
-          particleGraphic.endFill();
-          particleGraphic.alpha = particle.alpha;
-          app.stage.addChild(particleGraphic);
-        }
-      });
-
-      // Draw power-ups
-      gameRef.current.powerUps.forEach(powerUp => {
-        const powerUpGraphic = new PIXI.Graphics();
-        
-        // Different colors for different power-up types
-        let color = 0x00ff00;
-        switch (powerUp.type) {
-          case 'health': color = 0x00ff00; break;
-          case 'damage': color = 0xff0000; break;
-          case 'speed': color = 0x0000ff; break;
-          case 'multishot': color = 0xffff00; break;
-          case 'shield': color = 0x00ffff; break;
-        }
-        
-        powerUpGraphic.beginFill(color);
-        powerUpGraphic.drawRect(powerUp.x - powerUp.size/2, powerUp.y - powerUp.size/2, powerUp.size, powerUp.size);
-        powerUpGraphic.endFill();
-        
-        // Add glow effect
-        powerUpGraphic.lineStyle(2, color, 0.8);
-        powerUpGraphic.drawRect(powerUp.x - powerUp.size/2 - 2, powerUp.y - powerUp.size/2 - 2, powerUp.size + 4, powerUp.size + 4);
-        
-        // Add power-up type text
-        const typeText = new PIXI.Text(powerUp.type.charAt(0).toUpperCase(), {
-          fill: 0xffffff,
-          fontSize: 12,
-          fontWeight: 'bold'
-        });
-        typeText.anchor.set(0.5);
-        typeText.x = powerUp.x;
-        typeText.y = powerUp.y;
-        powerUpGraphic.addChild(typeText);
-        
-        app.stage.addChild(powerUpGraphic);
-      });
-
-      // Draw player with shield effect
-      const player = new PIXI.Graphics();
-      
-      // Draw shield if player has any
-      if (gameRef.current.player.shield > 0) {
-        player.lineStyle(3, 0x00ffff, 0.8);
-        player.drawCircle(gameRef.current.player.x, gameRef.current.player.y, gameRef.current.player.radius + 5);
-      }
-      
-      player.beginFill(0x4dabf7);
-      player.drawCircle(gameRef.current.player.x, gameRef.current.player.y, gameRef.current.player.radius);
-      player.endFill();
-      
-      // Player direction indicator
-      const dx = gameRef.current.mouseX - gameRef.current.player.x;
-      const dy = gameRef.current.mouseY - gameRef.current.player.y;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      if (length > 0) {
-        const normalizedX = dx / length;
-        const normalizedY = dy / length;
-        player.lineStyle(3, 0xffffff);
-        player.moveTo(gameRef.current.player.x, gameRef.current.player.y);
-        player.lineTo(
-          gameRef.current.player.x + normalizedX * 25,
-          gameRef.current.player.y + normalizedY * 25
-        );
-      }
-      app.stage.addChild(player);
-
-      // Draw enemies with different types
-      gameRef.current.enemies.forEach(enemy => {
-        if (!enemy.alive) return;
-        
-        const enemyGraphic = new PIXI.Graphics();
-        enemyGraphic.beginFill(enemy.color);
-        enemyGraphic.drawCircle(enemy.x, enemy.y, enemy.radius);
-        enemyGraphic.endFill();
-        
-        // Special effects for different enemy types
-        if (enemy.type === 'fast') {
-          // Speed lines for fast enemies
-          enemyGraphic.lineStyle(2, 0xffff00, 0.6);
-          for (let i = 0; i < 3; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const startX = enemy.x + Math.cos(angle) * (enemy.radius + 5);
-            const startY = enemy.y + Math.sin(angle) * (enemy.radius + 5);
-            const endX = startX + Math.cos(angle) * 10;
-            const endY = startY + Math.sin(angle) * 10;
-            enemyGraphic.moveTo(startX, startY);
-            enemyGraphic.lineTo(endX, endY);
-          }
-        } else if (enemy.type === 'tank') {
-          // Armor lines for tank enemies
-          enemyGraphic.lineStyle(3, 0x666666);
-          enemyGraphic.drawCircle(enemy.x, enemy.y, enemy.radius + 3);
-        } else if (enemy.type === 'bomber') {
-          // Pulsing effect for bomber enemies
-          const pulseRadius = enemy.radius + Math.sin(Date.now() / 200) * 3;
-          enemyGraphic.lineStyle(2, 0xff8800, 0.7);
-          enemyGraphic.drawCircle(enemy.x, enemy.y, pulseRadius);
-        }
-        
-        // HP bar
-        const hpBarWidth = 30;
-        const hpBarHeight = 4;
-        const hpPercentage = enemy.hp / enemy.maxHp;
-        
-        enemyGraphic.beginFill(0x333333);
-        enemyGraphic.drawRect(enemy.x - hpBarWidth/2, enemy.y - enemy.radius - 10, hpBarWidth, hpBarHeight);
-        enemyGraphic.endFill();
-        
-        enemyGraphic.beginFill(0xff6b6b);
-        enemyGraphic.drawRect(enemy.x - hpBarWidth/2, enemy.y - enemy.radius - 10, hpBarWidth * hpPercentage, hpBarHeight);
-        enemyGraphic.endFill();
-        
-        // Enemy type indicator
-        const typeText = new PIXI.Text(enemy.type.charAt(0).toUpperCase(), {
-          fill: 0xffffff,
-          fontSize: 8,
-          fontWeight: 'bold'
-        });
-        typeText.anchor.set(0.5);
-        typeText.x = enemy.x;
-        typeText.y = enemy.y - enemy.radius - 20;
-        enemyGraphic.addChild(typeText);
-        
-        app.stage.addChild(enemyGraphic);
-      });
-
-      // Draw bullets with critical hit effects
-      gameRef.current.bullets.forEach(bullet => {
-        const bulletGraphic = new PIXI.Graphics();
-        
-        if (bullet.isCrit) {
-          // Critical bullets are larger and have a glow
-          bulletGraphic.lineStyle(2, 0xffff00, 0.8);
-          bulletGraphic.drawCircle(bullet.x, bullet.y, bullet.radius + 2);
-          bulletGraphic.beginFill(0xffaa00);
+        shieldBar.clear();
+        if (player.shield > 0) {
+            shieldBar.beginFill(0x00ffff);
+            shieldBar.drawRect(250, 45, (player.shield / 100) * 200, 8);
+            shieldBar.endFill();
+            shieldText.text = `Shield: ${Math.ceil(player.shield)}`;
+            shieldText.visible = true;
         } else {
-          bulletGraphic.beginFill(0xfeca57);
+            shieldText.visible = false;
         }
-        
-        bulletGraphic.drawCircle(bullet.x, bullet.y, bullet.radius);
-        bulletGraphic.endFill();
-        
-        // Piercing bullets have a trail effect
-        if (bullet.piercing > 0) {
-          bulletGraphic.lineStyle(1, 0x00ffff, 0.6);
-          const trailLength = 15;
-          const angle = Math.atan2(bullet.vy, bullet.vx);
-          const startX = bullet.x - Math.cos(angle) * trailLength;
-          const startY = bullet.y - Math.sin(angle) * trailLength;
-          bulletGraphic.moveTo(startX, startY);
-          bulletGraphic.lineTo(bullet.x, bullet.y);
-        }
-        
-        app.stage.addChild(bulletGraphic);
-      });
 
-      // Draw damage texts
-      gameRef.current.damageTexts.forEach(damageText => {
-        const text = new PIXI.Text(damageText.text, {
-          fill: damageText.color,
-          fontSize: damageText.isCrit ? 16 : 12,
-          fontWeight: 'bold',
-          stroke: 0x000000,
-          strokeThickness: 2
-        });
-        text.anchor.set(0.5);
-        text.x = damageText.x;
-        text.y = damageText.y;
-        text.alpha = Math.max(0, damageText.timer / 60);
-        app.stage.addChild(text);
-      });
+        expBar.clear();
+        expBar.beginFill(0xfeca57);
+        expBar.drawRect(250, 70, 200 * (player.exp / player.expToNext), 12);
+        expBar.endFill();
+        expText.text = `EXP: ${Math.floor(player.exp)}/${player.expToNext}`;
+
+        damageText.text = `Damage: ${player.damage.toFixed(1)}`;
+        multishotText.text = `Multishot: ${player.multiShot}`;
+        critText.text = `Crit: ${(player.critChance * 100).toFixed(1)}%`;
+        critDamageText.text = `Crit Dmg: ${player.critDamage.toFixed(1)}x`;
+        timeText.text = `Time: ${Math.floor(gameRef.current.gameTime / 60)}s`;
+
+        if (gameRef.current.combo > 1) {
+            comboText.text = `COMBO x${gameRef.current.combo}!`;
+            comboText.visible = true;
+        } else {
+            comboText.visible = false;
+        }
     }
 
     function spawnEnemy() {
@@ -531,7 +298,7 @@ const Brotato: React.FC = () => {
       switch (side) {
         case 0: // top
           x = Math.random() * GAME_WIDTH;
-          y = UI_HEIGHT - 20; // Aparecer justo encima del área de juego
+          y = UI_HEIGHT - 20;
           break;
         case 1: // right
           x = GAME_WIDTH + 20;
@@ -550,7 +317,6 @@ const Brotato: React.FC = () => {
           y = UI_HEIGHT;
       }
 
-      // Determinar tipo de enemigo basado en el tiempo
       let enemyType: Enemy['type'] = 'normal';
       let enemyColor = 0xff4757;
       let enemyRadius = 12;
@@ -559,7 +325,7 @@ const Brotato: React.FC = () => {
       let enemyHP = gameRef.current.currentEnemyHP;
 
       const rand = Math.random();
-      const timeMultiplier = Math.floor(gameRef.current.gameTime / 1800); // Cada 30 segundos
+      const timeMultiplier = Math.floor(gameRef.current.gameTime / 1800);
 
       if (timeMultiplier > 0 && rand < 0.15) {
         enemyType = 'fast';
@@ -584,17 +350,48 @@ const Brotato: React.FC = () => {
         enemyHP = gameRef.current.currentEnemyHP;
       }
 
+      const sprite = new PIXI.Graphics();
+      sprite.beginFill(enemyColor);
+      sprite.drawCircle(0, 0, enemyRadius);
+      sprite.endFill();
+
+      if (enemyType === 'fast') {
+        sprite.lineStyle(2, 0xffff00, 0.6);
+        for (let i = 0; i < 3; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const sx = Math.cos(angle) * (enemyRadius + 5);
+            const sy = Math.sin(angle) * (enemyRadius + 5);
+            const ex = sx + Math.cos(angle) * 10;
+            const ey = sy + Math.sin(angle) * 10;
+            sprite.moveTo(sx, sy);
+            sprite.lineTo(ex, ey);
+        }
+      } else if (enemyType === 'tank') {
+        sprite.lineStyle(3, 0x666666);
+        sprite.drawCircle(0, 0, enemyRadius + 3);
+      } else if (enemyType === 'bomber') {
+        // Pulse effect handled in update
+      }
+
+      // HP Bar container
+      const hpBar = new PIXI.Graphics();
+      sprite.addChild(hpBar);
+
+      const typeText = new PIXI.Text(enemyType.charAt(0).toUpperCase(), {
+          fill: 0xffffff, fontSize: 8, fontWeight: 'bold'
+      });
+      typeText.anchor.set(0.5);
+      typeText.y = -enemyRadius - 20;
+      sprite.addChild(typeText);
+
+      sprite.x = x;
+      sprite.y = y;
+      gameLayer.addChild(sprite);
+
       gameRef.current.enemies.push({
-        x,
-        y,
-        hp: enemyHP,
-        maxHp: enemyHP,
-        radius: enemyRadius,
-        alive: true,
-        type: enemyType,
-        speed: enemySpeed,
-        damage: enemyDamage,
-        color: enemyColor,
+        x, y, hp: enemyHP, maxHp: enemyHP, radius: enemyRadius,
+        alive: true, type: enemyType, speed: enemySpeed,
+        damage: enemyDamage, color: enemyColor, sprite
       });
     }
 
@@ -602,16 +399,13 @@ const Brotato: React.FC = () => {
       const player = gameRef.current.player;
       const keys = gameRef.current.keys;
 
-      // Incrementar tiempo de juego
       gameRef.current.gameTime++;
 
-      // Aumentar velocidad de enemigos cada 20 segundos
-      const speedIncreaseInterval = ENEMY_SPEED_INCREASE * 60; // 20 segundos * 60 fps
+      const speedIncreaseInterval = ENEMY_SPEED_INCREASE * 60;
       const speedIncreases = Math.floor(gameRef.current.gameTime / speedIncreaseInterval);
       gameRef.current.currentEnemySpeed = BASE_ENEMY_SPEED + (speedIncreases * 0.2);
-      gameRef.current.currentEnemyHP = Math.floor(BASE_ENEMY_HP + (speedIncreases * 1.5)); // +1.5 HP cada 20 segundos
+      gameRef.current.currentEnemyHP = Math.floor(BASE_ENEMY_HP + (speedIncreases * 1.5));
 
-      // Move player (only if game is not over)
       if (!gameOver) {
         if (keys.w && player.y > player.radius + UI_HEIGHT) player.y -= PLAYER_SPEED;
         if (keys.s && player.y < GAME_HEIGHT + UI_HEIGHT - player.radius) player.y += PLAYER_SPEED;
@@ -619,29 +413,60 @@ const Brotato: React.FC = () => {
         if (keys.d && player.x < GAME_WIDTH - player.radius) player.x += PLAYER_SPEED;
       }
 
-      // Auto-shoot con velocidad basada en nivel
+      // Update Player Sprite
+      playerSprite.clear();
+      if (player.shield > 0) {
+        playerSprite.lineStyle(3, 0x00ffff, 0.8);
+        playerSprite.drawCircle(0, 0, player.radius + 5);
+      }
+      playerSprite.beginFill(0x4dabf7);
+      playerSprite.drawCircle(0, 0, player.radius);
+      playerSprite.endFill();
+      
+      const dx = gameRef.current.mouseX - player.x;
+      const dy = gameRef.current.mouseY - player.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      if (length > 0) {
+        const normalizedX = dx / length;
+        const normalizedY = dy / length;
+        playerSprite.lineStyle(3, 0xffffff);
+        playerSprite.moveTo(0, 0);
+        playerSprite.lineTo(normalizedX * 25, normalizedY * 25);
+      }
+      playerSprite.x = player.x;
+      playerSprite.y = player.y;
+
+      // Auto-shoot
       const currentShootCooldown = Math.max(10, BASE_SHOOT_COOLDOWN - (player.level - 1) * 5);
       gameRef.current.shootCooldown = Math.max(0, gameRef.current.shootCooldown - 1);
       if (gameRef.current.shootCooldown === 0) {
-        const dx = gameRef.current.mouseX - player.x;
-        const dy = gameRef.current.mouseY - player.y;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        
         if (length > 0) {
           const normalizedX = dx / length;
           const normalizedY = dy / length;
           
-          // Disparar múltiples balas si tiene multishot
           for (let i = 0; i < player.multiShot; i++) {
-            const angleOffset = (i - (player.multiShot - 1) / 2) * 0.2; // Spread entre balas
+            const angleOffset = (i - (player.multiShot - 1) / 2) * 0.2;
             const cos = Math.cos(angleOffset);
             const sin = Math.sin(angleOffset);
             const rotatedX = normalizedX * cos - normalizedY * sin;
             const rotatedY = normalizedX * sin + normalizedY * cos;
             
-            // Calcular crítico
             const isCrit = Math.random() < player.critChance;
             
+            const bulletSprite = new PIXI.Graphics();
+            if (isCrit) {
+                bulletSprite.lineStyle(2, 0xffff00, 0.8);
+                bulletSprite.beginFill(0xffaa00);
+                bulletSprite.drawCircle(0, 0, 8);
+            } else {
+                bulletSprite.beginFill(0xfeca57);
+                bulletSprite.drawCircle(0, 0, 4);
+            }
+            bulletSprite.endFill();
+            bulletSprite.x = player.x;
+            bulletSprite.y = player.y;
+            gameLayer.addChild(bulletSprite);
+
             gameRef.current.bullets.push({
               x: player.x,
               y: player.y,
@@ -650,9 +475,9 @@ const Brotato: React.FC = () => {
               radius: isCrit ? 6 : 4,
               isCrit: isCrit,
               piercing: player.level > 5 ? 1 : 0,
+              sprite: bulletSprite
             });
           }
-          
           gameRef.current.shootCooldown = currentShootCooldown;
         }
       }
@@ -662,12 +487,45 @@ const Brotato: React.FC = () => {
         bullet.x += bullet.vx;
         bullet.y += bullet.vy;
         
-        // Remove bullets that go off-screen
-        return bullet.x > -10 && bullet.x < GAME_WIDTH + 10 && 
+        if (bullet.sprite) {
+            bullet.sprite.x = bullet.x;
+            bullet.sprite.y = bullet.y;
+            
+            if (bullet.piercing > 0) {
+                // Simple trail effect
+                if (Math.random() < 0.3) {
+                    const trail = new PIXI.Graphics();
+                    trail.beginFill(0x00ffff, 0.5);
+                    trail.drawCircle(0, 0, 2);
+                    trail.endFill();
+                    trail.x = bullet.x;
+                    trail.y = bullet.y;
+                    gameLayer.addChild(trail);
+                    // Quick fade out
+                    const fade = () => {
+                        trail.alpha -= 0.1;
+                        if (trail.alpha <= 0) {
+                            trail.destroy();
+                        } else {
+                            requestAnimationFrame(fade);
+                        }
+                    };
+                    fade();
+                }
+            }
+        }
+
+        const inBounds = bullet.x > -10 && bullet.x < GAME_WIDTH + 10 && 
                bullet.y > UI_HEIGHT - 10 && bullet.y < GAME_HEIGHT + UI_HEIGHT + 10;
+        
+        if (!inBounds && bullet.sprite) {
+            bullet.sprite.destroy();
+            bullet.sprite = undefined;
+        }
+        return inBounds;
       });
 
-      // Move enemies towards player
+      // Move enemies
       gameRef.current.enemies.forEach(enemy => {
         if (!enemy.alive) return;
         
@@ -682,9 +540,36 @@ const Brotato: React.FC = () => {
           enemy.x += normalizedX * enemy.speed;
           enemy.y += normalizedY * enemy.speed;
         }
+
+        if (enemy.sprite) {
+            enemy.sprite.x = enemy.x;
+            enemy.sprite.y = enemy.y;
+
+            // Update HP Bar
+            const hpBar = enemy.sprite.children[0] as PIXI.Graphics;
+            if (hpBar) {
+                hpBar.clear();
+                hpBar.beginFill(0x333333);
+                hpBar.drawRect(-15, -enemy.radius - 10, 30, 4);
+                hpBar.endFill();
+                hpBar.beginFill(0xff6b6b);
+                hpBar.drawRect(-15, -enemy.radius - 10, 30 * (enemy.hp / enemy.maxHp), 4);
+                hpBar.endFill();
+            }
+
+            if (enemy.type === 'bomber') {
+                 const pulseRadius = enemy.radius + Math.sin(Date.now() / 200) * 3;
+                 enemy.sprite.clear();
+                 enemy.sprite.beginFill(enemy.color);
+                 enemy.sprite.drawCircle(0, 0, enemy.radius);
+                 enemy.sprite.endFill();
+                 enemy.sprite.lineStyle(2, 0xff8800, 0.7);
+                 enemy.sprite.drawCircle(0, 0, pulseRadius);
+            }
+        }
       });
 
-      // Check bullet-enemy collisions
+      // Collisions
       gameRef.current.bullets = gameRef.current.bullets.filter(bullet => {
         let bulletShouldRemove = false;
         let piercingLeft = bullet.piercing;
@@ -703,19 +588,39 @@ const Brotato: React.FC = () => {
             
             enemy.hp -= finalDamage;
             
-            // Crear texto de daño
+            const textSprite = new PIXI.Text(finalDamage.toString(), {
+                fill: bullet.isCrit ? 0xfeca57 : 0xffffff,
+                fontSize: bullet.isCrit ? 16 : 12,
+                fontWeight: 'bold',
+                stroke: 0x000000,
+                strokeThickness: 2
+            });
+            textSprite.anchor.set(0.5);
+            textSprite.x = enemy.x;
+            textSprite.y = enemy.y - 20;
+            gameLayer.addChild(textSprite);
+
             gameRef.current.damageTexts.push({
               x: enemy.x,
               y: enemy.y - 20,
               text: finalDamage.toString(),
               timer: 60,
               color: bullet.isCrit ? 0xfeca57 : 0xffffff,
-              isCrit: bullet.isCrit
+              isCrit: bullet.isCrit,
+              sprite: textSprite
             });
             
-            // Crear partículas
+            // Particles
             for (let i = 0; i < (bullet.isCrit ? 8 : 4); i++) {
               const angle = (i / (bullet.isCrit ? 8 : 4)) * Math.PI * 2;
+              const pSprite = new PIXI.Graphics();
+              pSprite.beginFill(bullet.isCrit ? 0xfeca57 : enemy.color);
+              pSprite.drawCircle(0, 0, bullet.isCrit ? 4 : 2);
+              pSprite.endFill();
+              pSprite.x = enemy.x;
+              pSprite.y = enemy.y;
+              gameLayer.addChild(pSprite);
+
               gameRef.current.particles.push({
                 x: enemy.x,
                 y: enemy.y,
@@ -725,7 +630,8 @@ const Brotato: React.FC = () => {
                 maxLife: 30,
                 color: bullet.isCrit ? 0xfeca57 : enemy.color,
                 size: bullet.isCrit ? 4 : 2,
-                alpha: 1.0
+                alpha: 1.0,
+                sprite: pSprite
               });
             }
             
@@ -737,26 +643,26 @@ const Brotato: React.FC = () => {
             
             if (enemy.hp <= 0) {
               enemy.alive = false;
+              // Don't destroy sprite here, let the cleanup loop handle it
+              // if (enemy.sprite) enemy.sprite.destroy();
+
               gameRef.current.currentScore += enemy.type === 'tank' ? 25 : enemy.type === 'bomber' ? 20 : 10;
               gameRef.current.enemiesKilled++;
               gameRef.current.combo++;
-              gameRef.current.comboTimer = 180; // 3 segundos
+              gameRef.current.comboTimer = 180;
               setScore(gameRef.current.currentScore);
               
-              // Añadir experiencia
               const expGain = EXP_PER_ENEMY * (enemy.type === 'tank' ? 2 : enemy.type === 'bomber' ? 1.5 : 1);
               player.exp += expGain;
               
-              // Verificar si sube de nivel
               if (player.exp >= player.expToNext) {
                 player.level++;
                 player.exp -= player.expToNext;
                 player.expToNext = Math.floor(player.expToNext * 1.2);
                 player.damage++;
                 player.maxHealth += 10;
-                player.health = player.maxHealth; // Curar al subir de nivel
+                player.health = player.maxHealth;
                 
-                // Bonificaciones aleatorias al subir de nivel
                 const bonusRand = Math.random();
                 if (bonusRand < 0.3) {
                   player.multiShot++;
@@ -770,10 +676,14 @@ const Brotato: React.FC = () => {
           }
         });
         
+        if (bulletShouldRemove && bullet.sprite) {
+            bullet.sprite.destroy();
+            bullet.sprite = undefined;
+        }
         return !bulletShouldRemove;
       });
 
-      // Check player-enemy collisions
+      // Player collisions
       gameRef.current.enemies.forEach(enemy => {
         if (!enemy.alive) return;
         
@@ -784,29 +694,29 @@ const Brotato: React.FC = () => {
         if (distance < player.radius + enemy.radius) {
           let damage = enemy.damage;
           
-          // Aplicar escudo si existe
           if (player.shield > 0) {
             const shieldAbsorbed = Math.min(player.shield, damage);
             player.shield -= shieldAbsorbed;
             damage -= shieldAbsorbed;
           }
           
-          // Aplicar daño a la salud
           if (damage > 0) {
             player.health -= damage;
             
-            // Crear texto de daño al jugador
+            const textSprite = new PIXI.Text(`-${damage}`, {
+                fill: 0xff4757, fontSize: 12, fontWeight: 'bold', stroke: 0x000000, strokeThickness: 2
+            });
+            textSprite.anchor.set(0.5);
+            textSprite.x = player.x;
+            textSprite.y = player.y - 20;
+            gameLayer.addChild(textSprite);
+
             gameRef.current.damageTexts.push({
-              x: player.x,
-              y: player.y - 20,
-              text: `-${damage}`,
-              timer: 60,
-              color: 0xff4757,
-              isCrit: false
+              x: player.x, y: player.y - 20, text: `-${damage}`,
+              timer: 60, color: 0xff4757, isCrit: false, sprite: textSprite
             });
           }
           
-          // Knockback del enemigo
           const knockbackForce = 5;
           const normalizedX = dx / distance;
           const normalizedY = dy / distance;
@@ -823,10 +733,15 @@ const Brotato: React.FC = () => {
         }
       });
 
-      // Remove dead enemies
-      gameRef.current.enemies = gameRef.current.enemies.filter(enemy => enemy.alive);
+      gameRef.current.enemies = gameRef.current.enemies.filter(enemy => {
+          if (!enemy.alive && enemy.sprite) {
+              enemy.sprite.destroy({ children: true });
+              enemy.sprite = undefined;
+          }
+          return enemy.alive;
+      });
 
-      // Update particles
+      // Particles
       gameRef.current.particles = gameRef.current.particles.filter(particle => {
         particle.x += particle.vx;
         particle.y += particle.vy;
@@ -834,87 +749,128 @@ const Brotato: React.FC = () => {
         particle.vx *= 0.98;
         particle.vy *= 0.98;
         particle.alpha = particle.life / particle.maxLife;
+        
+        if (particle.sprite) {
+            particle.sprite.x = particle.x;
+            particle.sprite.y = particle.y;
+            particle.sprite.alpha = particle.alpha;
+        }
+
+        if (particle.life <= 0 && particle.sprite) {
+            particle.sprite.destroy();
+            particle.sprite = undefined;
+        }
         return particle.life > 0;
       });
 
-      // Update damage texts
+      // Damage Texts
       gameRef.current.damageTexts = gameRef.current.damageTexts.filter(text => {
         text.timer--;
         text.y -= 1;
+        if (text.sprite) {
+            text.sprite.y = text.y;
+            text.sprite.alpha = Math.max(0, text.timer / 60);
+        }
+        if (text.timer <= 0 && text.sprite) {
+            text.sprite.destroy();
+            text.sprite = undefined;
+        }
         return text.timer > 0;
       });
 
-      // Update combo timer
       if (gameRef.current.comboTimer > 0) {
         gameRef.current.comboTimer--;
       } else {
         gameRef.current.combo = 0;
       }
 
-      // Spawn power-ups
+      // Powerups
       gameRef.current.powerUpTimer--;
       if (gameRef.current.powerUpTimer <= 0) {
         const powerUpTypes: PowerUp['type'][] = ['health', 'damage', 'speed', 'multishot', 'shield'];
         const randomType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
         
+        const x = Math.random() * (GAME_WIDTH - 40) + 20;
+        const y = Math.random() * (GAME_HEIGHT - 40) + 20 + UI_HEIGHT;
+        
+        const pSprite = new PIXI.Graphics();
+        let color = 0x00ff00;
+        switch (randomType) {
+          case 'health': color = 0x00ff00; break;
+          case 'damage': color = 0xff0000; break;
+          case 'speed': color = 0x0000ff; break;
+          case 'multishot': color = 0xffff00; break;
+          case 'shield': color = 0x00ffff; break;
+        }
+        pSprite.beginFill(color);
+        pSprite.drawRect(-10, -10, 20, 20);
+        pSprite.endFill();
+        pSprite.lineStyle(2, color, 0.8);
+        pSprite.drawRect(-12, -12, 24, 24);
+        
+        const typeText = new PIXI.Text(randomType.charAt(0).toUpperCase(), {
+          fill: 0xffffff, fontSize: 12, fontWeight: 'bold'
+        });
+        typeText.anchor.set(0.5);
+        pSprite.addChild(typeText);
+        pSprite.x = x;
+        pSprite.y = y;
+        gameLayer.addChild(pSprite);
+
         gameRef.current.powerUps.push({
-          x: Math.random() * (GAME_WIDTH - 40) + 20,
-          y: Math.random() * (GAME_HEIGHT - 40) + 20 + UI_HEIGHT, // Spawn en área de juego
-          type: randomType,
-          radius: 12,
-          size: 20,
-          active: true,
-          timer: POWERUP_DURATION
+          x, y, type: randomType, radius: 12, size: 20,
+          active: true, timer: POWERUP_DURATION, sprite: pSprite
         });
         
         gameRef.current.powerUpTimer = POWERUP_SPAWN_RATE;
       }
 
-      // Update power-ups
       gameRef.current.powerUps = gameRef.current.powerUps.filter(powerUp => {
-        if (!powerUp.active) return false;
+        if (!powerUp.active) {
+            if (powerUp.sprite) {
+                powerUp.sprite.destroy();
+                powerUp.sprite = undefined;
+            }
+            return false;
+        }
         
         powerUp.timer--;
-        if (powerUp.timer <= 0) return false;
+        if (powerUp.timer <= 0) {
+            if (powerUp.sprite) {
+                powerUp.sprite.destroy();
+                powerUp.sprite = undefined;
+            }
+            return false;
+        }
         
-        // Check collision with player
         const dx = player.x - powerUp.x;
         const dy = player.y - powerUp.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < player.radius + powerUp.radius) {
-          // Apply power-up effect
           switch (powerUp.type) {
-            case 'health':
-              player.health = Math.min(player.maxHealth, player.health + 30);
-              break;
-            case 'damage':
-              player.damage += 2;
-              break;
-            case 'speed':
-              // Speed boost would be implemented in movement
-              break;
-            case 'multishot':
-              player.multiShot++;
-              break;
-            case 'shield':
-              player.shield += 50;
-              break;
+            case 'health': player.health = Math.min(player.maxHealth, player.health + 30); break;
+            case 'damage': player.damage += 2; break;
+            case 'speed': break;
+            case 'multishot': player.multiShot++; break;
+            case 'shield': player.shield += 50; break;
           }
-          return false; // Remove power-up
+          if (powerUp.sprite) {
+              powerUp.sprite.destroy();
+              powerUp.sprite = undefined;
+          }
+          return false;
         }
-        
         return true;
       });
 
-      // Spawn enemies
       gameRef.current.spawnTimer--;
       if (gameRef.current.spawnTimer <= 0) {
         spawnEnemy();
         gameRef.current.spawnTimer = SPAWN_RATE - Math.min(gameRef.current.currentScore / 10, 80);
       }
 
-      drawGame();
+      updateUI();
     }
 
     // Event listeners
