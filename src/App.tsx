@@ -79,7 +79,7 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <BrowserRouter basename='/phaser-test'>
+  <BrowserRouter basename={import.meta.env.BASE_URL}>
     <AppContent />
   </BrowserRouter>
 );

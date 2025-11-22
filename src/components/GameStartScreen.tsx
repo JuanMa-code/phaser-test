@@ -36,14 +36,16 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
 }) => {
   const styles = {
     container: {
-      minHeight: '100dvh',
+      height: '100dvh',
+      width: '100vw',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       background: theme.background || 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
       fontFamily: 'Arial, sans-serif',
       padding: '1rem',
-      overflowY: 'auto' as const
+      overflow: 'hidden',
+      boxSizing: 'border-box' as const
     },
     card: {
       background: theme.cardBackground || 'rgba(255, 255, 255, 0.15)',
@@ -53,14 +55,27 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
       border: '1px solid rgba(255, 255, 255, 0.2)',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
       maxWidth: '500px',
-      width: '95%',
+      width: '100%',
+      maxHeight: '90vh',
+      display: 'flex',
+      flexDirection: 'column' as const,
       textAlign: 'center' as const,
       color: theme.text || 'white',
-      margin: '1rem auto'
+      margin: '0 auto'
+    },
+    scrollArea: {
+      overflowY: 'auto' as const,
+      flex: 1,
+      minHeight: 0,
+      paddingRight: '0.5rem',
+      margin: '0.5rem 0',
+      scrollbarWidth: 'thin' as const,
+      scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent'
     },
     title: {
       fontSize: '3rem',
-      marginBottom: '1rem',
+      marginBottom: '0.5rem',
+      flexShrink: 0,
       background: theme.accent || 'linear-gradient(45deg, #ff0080, #00ff80, #0080ff)',
       backgroundClip: 'text',
       WebkitBackgroundClip: 'text',
@@ -69,7 +84,8 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
     },
     description: {
       fontSize: '1.1rem',
-      marginBottom: '1.5rem',
+      marginBottom: '1rem',
+      flexShrink: 0,
       opacity: 0.9,
       lineHeight: '1.4'
     },
@@ -77,12 +93,12 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
       background: 'rgba(255, 255, 255, 0.1)',
       borderRadius: '15px',
       padding: '1.2rem',
-      marginBottom: '1.5rem',
+      marginBottom: '1rem',
       border: '1px solid rgba(255, 255, 255, 0.2)'
     },
     sectionTitle: {
       fontSize: '1.2rem',
-      marginBottom: '1rem',
+      marginBottom: '0.8rem',
       color: theme.text || '#fff'
     },
     sectionContent: {
@@ -101,7 +117,7 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
       fontWeight: 'bold',
       boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
       transition: 'all 0.3s ease',
-      marginBottom: '1rem',
+      marginBottom: '0.5rem',
       width: '100%'
     },
     secondaryButton: {
@@ -129,29 +145,31 @@ const GameStartScreen: React.FC<GameStartScreenProps> = ({
           {description}
         </p>
 
-        {highScore !== undefined && (
-           <div style={{...styles.section, textAlign: 'center'}}>
-             <h3 style={styles.sectionTitle}>🏆 Récord Actual</h3>
-             <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{highScore}</p>
-           </div>
-        )}
+        <div style={styles.scrollArea}>
+          {highScore !== undefined && (
+             <div style={{...styles.section, textAlign: 'center'}}>
+               <h3 style={styles.sectionTitle}>🏆 Récord Actual</h3>
+               <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>{highScore}</p>
+             </div>
+          )}
 
-        {instructions.map((section, index) => (
-          <div key={index} style={styles.section}>
-            <h3 style={styles.sectionTitle}>
-              {section.icon} {section.title}
-            </h3>
-            <div style={styles.sectionContent}>
-              {section.items.map((item, i) => (
-                <p key={i} style={{ marginBottom: '0.5rem' }}>{item}</p>
-              ))}
+          {instructions.map((section, index) => (
+            <div key={index} style={styles.section}>
+              <h3 style={styles.sectionTitle}>
+                {section.icon} {section.title}
+              </h3>
+              <div style={styles.sectionContent}>
+                {section.items.map((item, i) => (
+                  <p key={i} style={{ marginBottom: '0.5rem' }}>{item}</p>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {children}
+          {children}
+        </div>
         
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0, marginTop: '0.5rem' }}>
           <button
             onClick={onStart}
             style={styles.primaryButton}
