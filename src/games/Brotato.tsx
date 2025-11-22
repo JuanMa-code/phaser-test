@@ -1037,6 +1037,7 @@ const Brotato: React.FC = () => {
           secondary: '#feca57',
           accent: '#ff4757',
         }}
+        onStart={() => setShowInstructions(false)}
       />
     );
   }
