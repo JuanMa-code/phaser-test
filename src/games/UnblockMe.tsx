@@ -1,5 +1,5 @@
-import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import Phaser from 'phaser';
 import GameStartScreen from '../components/GameStartScreen';
 import GameOverScreen from '../components/GameOverScreen';
 
@@ -8,606 +8,398 @@ const GAME_HEIGHT = 480;
 const GRID_SIZE = 6;
 const CELL_SIZE = 80;
 
-interface Block {
-  id: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: number;
-  direction: 'horizontal' | 'vertical';
-  isTarget?: boolean;
+interface BlockData {
+    id: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    color: number;
+    direction: 'horizontal' | 'vertical';
+    isTarget?: boolean;
 }
 
-// Niveles progresivos con complejidad real (requieren múltiples movimientos)
-const LEVELS = [
-  // Nivel 1 - 3-4 movimientos
-  [
-    { id: 0, x: 1, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal' as const, isTarget: true },
-    { id: 1, x: 3, y: 1, width: 1, height: 3, color: 0x4169E1, direction: 'vertical' as const },
-    { id: 2, x: 0, y: 0, width: 2, height: 1, color: 0x32CD32, direction: 'horizontal' as const },
-    { id: 3, x: 4, y: 0, width: 1, height: 2, color: 0xFFD700, direction: 'vertical' as const },
-    { id: 4, x: 0, y: 1, width: 1, height: 2, color: 0xFF69B4, direction: 'vertical' as const },
-    { id: 5, x: 1, y: 3, width: 2, height: 1, color: 0x8A2BE2, direction: 'horizontal' as const },
-    { id: 6, x: 4, y: 4, width: 2, height: 1, color: 0x00CED1, direction: 'horizontal' as const },
-  ],
-  // Nivel 2 - 5-6 movimientos
-  [
-    { id: 0, x: 0, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal' as const, isTarget: true },
-    { id: 1, x: 2, y: 0, width: 1, height: 3, color: 0x4169E1, direction: 'vertical' as const },
-    { id: 2, x: 3, y: 0, width: 2, height: 1, color: 0x32CD32, direction: 'horizontal' as const },
-    { id: 3, x: 5, y: 0, width: 1, height: 3, color: 0xFFD700, direction: 'vertical' as const },
-    { id: 4, x: 0, y: 0, width: 1, height: 2, color: 0xFF69B4, direction: 'vertical' as const },
-    { id: 5, x: 1, y: 0, width: 1, height: 2, color: 0x8A2BE2, direction: 'vertical' as const },
-    { id: 6, x: 3, y: 3, width: 1, height: 2, color: 0x00CED1, direction: 'vertical' as const },
-    { id: 7, x: 4, y: 3, width: 1, height: 2, color: 0xFFA500, direction: 'vertical' as const },
-    { id: 8, x: 0, y: 4, width: 3, height: 1, color: 0x9370DB, direction: 'horizontal' as const },
-  ],
-  // Nivel 3 - 7-8 movimientos
-  [
-    { id: 0, x: 2, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal' as const, isTarget: true },
-    { id: 1, x: 0, y: 0, width: 1, height: 3, color: 0x4169E1, direction: 'vertical' as const },
-    { id: 2, x: 1, y: 0, width: 2, height: 1, color: 0x32CD32, direction: 'horizontal' as const },
-    { id: 3, x: 4, y: 0, width: 1, height: 2, color: 0xFFD700, direction: 'vertical' as const },
-    { id: 4, x: 5, y: 0, width: 1, height: 3, color: 0xFF69B4, direction: 'vertical' as const },
-    { id: 5, x: 1, y: 1, width: 1, height: 2, color: 0x8A2BE2, direction: 'vertical' as const },
-    { id: 6, x: 4, y: 3, width: 2, height: 1, color: 0x00CED1, direction: 'horizontal' as const },
-    { id: 7, x: 2, y: 0, width: 1, height: 2, color: 0xFFA500, direction: 'vertical' as const },
-    { id: 8, x: 3, y: 1, width: 1, height: 2, color: 0x9370DB, direction: 'vertical' as const },
-    { id: 9, x: 0, y: 4, width: 2, height: 1, color: 0x228B22, direction: 'horizontal' as const },
-    { id: 10, x: 2, y: 4, width: 2, height: 1, color: 0xDC143C, direction: 'horizontal' as const },
-  ],
-  // Nivel 4 - 10-12 movimientos
-  [
-    { id: 0, x: 1, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal' as const, isTarget: true },
-    { id: 1, x: 0, y: 0, width: 1, height: 2, color: 0x4169E1, direction: 'vertical' as const },
-    { id: 2, x: 1, y: 0, width: 1, height: 2, color: 0x32CD32, direction: 'vertical' as const },
-    { id: 3, x: 2, y: 0, width: 2, height: 1, color: 0xFFD700, direction: 'horizontal' as const },
-    { id: 4, x: 4, y: 0, width: 1, height: 3, color: 0xFF69B4, direction: 'vertical' as const },
-    { id: 5, x: 5, y: 0, width: 1, height: 2, color: 0x8A2BE2, direction: 'vertical' as const },
-    { id: 6, x: 2, y: 1, width: 1, height: 2, color: 0x00CED1, direction: 'vertical' as const },
-    { id: 7, x: 3, y: 1, width: 1, height: 2, color: 0xFFA500, direction: 'vertical' as const },
-    { id: 8, x: 0, y: 3, width: 1, height: 2, color: 0x9370DB, direction: 'vertical' as const },
-    { id: 9, x: 3, y: 3, width: 2, height: 1, color: 0x228B22, direction: 'horizontal' as const },
-    { id: 10, x: 5, y: 3, width: 1, height: 2, color: 0xDC143C, direction: 'vertical' as const },
-    { id: 11, x: 1, y: 4, width: 2, height: 1, color: 0x4682B4, direction: 'horizontal' as const },
-    { id: 12, x: 4, y: 5, width: 2, height: 1, color: 0xB22222, direction: 'horizontal' as const },
-  ],
-  // Nivel 5 - 15+ movimientos (muy difícil)
-  [
-    { id: 0, x: 0, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal' as const, isTarget: true },
-    { id: 1, x: 2, y: 0, width: 1, height: 2, color: 0x4169E1, direction: 'vertical' as const },
-    { id: 2, x: 3, y: 0, width: 1, height: 3, color: 0x32CD32, direction: 'vertical' as const },
-    { id: 3, x: 4, y: 0, width: 2, height: 1, color: 0xFFD700, direction: 'horizontal' as const },
-    { id: 4, x: 0, y: 0, width: 2, height: 1, color: 0xFF69B4, direction: 'horizontal' as const },
-    { id: 5, x: 0, y: 1, width: 1, height: 2, color: 0x8A2BE2, direction: 'vertical' as const },
-    { id: 6, x: 1, y: 1, width: 1, height: 2, color: 0x00CED1, direction: 'vertical' as const },
-    { id: 7, x: 4, y: 1, width: 1, height: 2, color: 0xFFA500, direction: 'vertical' as const },
-    { id: 8, x: 5, y: 1, width: 1, height: 3, color: 0x9370DB, direction: 'vertical' as const },
-    { id: 9, x: 2, y: 3, width: 1, height: 2, color: 0x228B22, direction: 'vertical' as const },
-    { id: 10, x: 3, y: 4, width: 1, height: 2, color: 0xDC143C, direction: 'vertical' as const },
-    { id: 11, x: 0, y: 4, width: 2, height: 1, color: 0x4682B4, direction: 'horizontal' as const },
-    { id: 12, x: 4, y: 4, width: 1, height: 2, color: 0xB22222, direction: 'vertical' as const },
-    { id: 13, x: 0, y: 5, width: 3, height: 1, color: 0x8FBC8F, direction: 'horizontal' as const },
-  ],
+const LEVELS: BlockData[][] = [
+    // Level 1
+    [
+        { id: 0, x: 1, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal', isTarget: true },
+        { id: 1, x: 3, y: 1, width: 1, height: 3, color: 0x4169E1, direction: 'vertical' },
+        { id: 2, x: 0, y: 0, width: 2, height: 1, color: 0x32CD32, direction: 'horizontal' },
+        { id: 3, x: 4, y: 0, width: 1, height: 2, color: 0xFFD700, direction: 'vertical' },
+        { id: 4, x: 0, y: 1, width: 1, height: 2, color: 0xFF69B4, direction: 'vertical' },
+        { id: 5, x: 1, y: 3, width: 2, height: 1, color: 0x8A2BE2, direction: 'horizontal' },
+        { id: 6, x: 4, y: 4, width: 2, height: 1, color: 0x00CED1, direction: 'horizontal' },
+    ],
+    // Level 2
+    [
+        { id: 0, x: 0, y: 2, width: 2, height: 1, color: 0xFF3333, direction: 'horizontal', isTarget: true },
+        { id: 1, x: 2, y: 0, width: 1, height: 3, color: 0x4169E1, direction: 'vertical' },
+        { id: 2, x: 3, y: 0, width: 2, height: 1, color: 0x32CD32, direction: 'horizontal' },
+        { id: 3, x: 5, y: 0, width: 1, height: 3, color: 0xFFD700, direction: 'vertical' },
+        { id: 4, x: 0, y: 0, width: 1, height: 2, color: 0xFF69B4, direction: 'vertical' },
+        { id: 5, x: 1, y: 0, width: 1, height: 2, color: 0x8A2BE2, direction: 'vertical' },
+        { id: 6, x: 3, y: 3, width: 1, height: 2, color: 0x00CED1, direction: 'vertical' },
+        { id: 7, x: 4, y: 3, width: 1, height: 2, color: 0xFFA500, direction: 'vertical' },
+        { id: 8, x: 0, y: 4, width: 3, height: 1, color: 0x9370DB, direction: 'horizontal' },
+    ]
 ];
 
+class Block extends Phaser.GameObjects.Container {
+    public gridX: number;
+    public gridY: number;
+    public gridWidth: number;
+    public gridHeight: number;
+    public direction: 'horizontal' | 'vertical';
+    public isTarget: boolean;
+    public id: number;
+
+    private bg: Phaser.GameObjects.Graphics;
+
+    constructor(scene: Phaser.Scene, data: BlockData) {
+        super(scene, data.x * CELL_SIZE, data.y * CELL_SIZE);
+        
+        this.id = data.id;
+        this.gridX = data.x;
+        this.gridY = data.y;
+        this.gridWidth = data.width;
+        this.gridHeight = data.height;
+        this.direction = data.direction;
+        this.isTarget = !!data.isTarget;
+
+        this.bg = scene.add.graphics();
+        this.draw(data.color);
+        this.add(this.bg);
+
+        this.setSize(data.width * CELL_SIZE, data.height * CELL_SIZE);
+        this.setInteractive({ draggable: true });
+        
+        scene.add.existing(this);
+    }
+
+    draw(color: number) {
+        this.bg.clear();
+        
+        // Shadow
+        this.bg.fillStyle(0x000000, 0.2);
+        this.bg.fillRoundedRect(4, 4, this.width - 8, this.height - 8, 8);
+
+        // Main block
+        this.bg.fillStyle(color);
+        this.bg.fillRoundedRect(0, 0, this.width - 8, this.height - 8, 8);
+
+        // Highlight
+        this.bg.fillStyle(0xFFFFFF, 0.3);
+        this.bg.fillRoundedRect(2, 2, this.width - 12, this.height/2 - 6, 6);
+
+        if (this.isTarget) {
+            this.bg.fillStyle(0xFFFFFF);
+            this.bg.fillCircle((this.width - 8)/2, (this.height - 8)/2, 8);
+            this.bg.fillStyle(color);
+            this.bg.fillCircle((this.width - 8)/2, (this.height - 8)/2, 5);
+        }
+    }
+}
+
+class UnblockMeScene extends Phaser.Scene {
+    private blocks: Block[] = [];
+    private currentLevelIndex = 0;
+    private moves = 0;
+    private isLevelComplete = false;
+
+    private onMovesUpdate: (moves: number) => void;
+    private onLevelComplete: (moves: number) => void;
+
+    constructor(
+        onMovesUpdate: (moves: number) => void,
+        onLevelComplete: (moves: number) => void
+    ) {
+        super('UnblockMeScene');
+        this.onMovesUpdate = onMovesUpdate;
+        this.onLevelComplete = onLevelComplete;
+    }
+
+    init(data: { level: number }) {
+        this.currentLevelIndex = data.level;
+        this.moves = 0;
+        this.isLevelComplete = false;
+    }
+
+    create() {
+        this.createBoard();
+        this.loadLevel(this.currentLevelIndex);
+    }
+
+    createBoard() {
+        const bg = this.add.graphics();
+        
+        // Wood background
+        bg.fillStyle(0x8B4513);
+        bg.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+        // Board area
+        bg.fillStyle(0xF5DEB3);
+        bg.fillRoundedRect(0, 0, GAME_WIDTH, GAME_HEIGHT, 0);
+
+        // Grid lines
+        bg.lineStyle(1, 0xD2B48C, 0.5);
+        for (let i = 0; i <= GRID_SIZE; i++) {
+            bg.moveTo(i * CELL_SIZE, 0);
+            bg.lineTo(i * CELL_SIZE, GAME_HEIGHT);
+            bg.moveTo(0, i * CELL_SIZE);
+            bg.lineTo(GAME_WIDTH, i * CELL_SIZE);
+        }
+        bg.strokePath();
+
+        // Exit marker
+        bg.lineStyle(4, 0xFF3333);
+        bg.fillStyle(0xFF3333, 0.3);
+        bg.fillRect(GAME_WIDTH - 10, 2 * CELL_SIZE + 10, 10, CELL_SIZE - 20);
+        bg.strokeRect(GAME_WIDTH - 10, 2 * CELL_SIZE + 10, 10, CELL_SIZE - 20);
+    }
+
+    loadLevel(index: number) {
+        // Clear existing blocks
+        this.blocks.forEach(b => b.destroy());
+        this.blocks = [];
+
+        const levelData = LEVELS[index];
+        levelData.forEach(data => {
+            const block = new Block(this, data);
+            
+            block.on('dragstart', () => {
+                this.children.bringToTop(block);
+                (block as any).startX = block.x;
+                (block as any).startY = block.y;
+                (block as any).startGridX = block.gridX;
+                (block as any).startGridY = block.gridY;
+            });
+
+            block.on('drag', (pointer: Phaser.Input.Pointer, dragX: number, dragY: number) => {
+                if (this.isLevelComplete) return;
+
+                if (block.direction === 'horizontal') {
+                    // Constrain Y
+                    block.y = block.gridY * CELL_SIZE;
+                    
+                    // Calculate grid bounds
+                    const newGridX = Math.round(dragX / CELL_SIZE);
+                    
+                    if (this.isValidMove(block, newGridX, block.gridY)) {
+                        block.x = Math.max(0, Math.min((GRID_SIZE - block.gridWidth) * CELL_SIZE, dragX));
+                    }
+                } else {
+                    // Constrain X
+                    block.x = block.gridX * CELL_SIZE;
+                    
+                    const newGridY = Math.round(dragY / CELL_SIZE);
+                    
+                    if (this.isValidMove(block, block.gridX, newGridY)) {
+                        block.y = Math.max(0, Math.min((GRID_SIZE - block.gridHeight) * CELL_SIZE, dragY));
+                    }
+                }
+            });
+
+            block.on('dragend', () => {
+                if (this.isLevelComplete) return;
+
+                const newGridX = Math.round(block.x / CELL_SIZE);
+                const newGridY = Math.round(block.y / CELL_SIZE);
+
+                // Snap to grid
+                block.x = newGridX * CELL_SIZE;
+                block.y = newGridY * CELL_SIZE;
+
+                if (newGridX !== (block as any).startGridX || newGridY !== (block as any).startGridY) {
+                    block.gridX = newGridX;
+                    block.gridY = newGridY;
+                    this.moves++;
+                    this.onMovesUpdate(this.moves);
+                    this.checkWin();
+                }
+            });
+
+            this.blocks.push(block);
+        });
+    }
+
+    isValidMove(block: Block, targetGridX: number, targetGridY: number): boolean {
+        // Check bounds
+        if (targetGridX < 0 || targetGridY < 0 || 
+            targetGridX + block.gridWidth > GRID_SIZE || 
+            targetGridY + block.gridHeight > GRID_SIZE) {
+            return false;
+        }
+
+        // Check collision with other blocks
+        // We need to check the path from current position to target position
+        // But for simple drag, we just check if the target position overlaps with any other block
+        // This is a simplification, a robust implementation would check the swept path
+        
+        // Let's check if the target rect overlaps any other block
+        for (const other of this.blocks) {
+            if (other === block) continue;
+
+            if (targetGridX < other.gridX + other.gridWidth &&
+                targetGridX + block.gridWidth > other.gridX &&
+                targetGridY < other.gridY + other.gridHeight &&
+                targetGridY + block.gridHeight > other.gridY) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    checkWin() {
+        const target = this.blocks.find(b => b.isTarget);
+        if (target && target.gridX + target.gridWidth === GRID_SIZE) {
+            this.isLevelComplete = true;
+            this.onLevelComplete(this.moves);
+        }
+    }
+}
+
 const UnblockMe: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'levelComplete' | 'gameComplete'>('start');
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [moves, setMoves] = useState(0);
-  const [bestMoves, setBestMoves] = useState(() => {
-    const saved = localStorage.getItem('unblockme-best-moves');
-    return saved ? JSON.parse(saved) : Array(LEVELS.length).fill(Infinity);
-  });
+    const [gameState, setGameState] = useState<'start' | 'playing' | 'levelComplete'>('start');
+    const [level, setLevel] = useState(0);
+    const [moves, setMoves] = useState(0);
+    const gameRef = useRef<Phaser.Game | null>(null);
 
-  useEffect(() => {
-    if (gameState !== 'playing') return;
+    useEffect(() => {
+        if (gameState === 'playing') {
+            const config: Phaser.Types.Core.GameConfig = {
+                type: Phaser.AUTO,
+                width: GAME_WIDTH,
+                height: GAME_HEIGHT,
+                parent: 'phaser-game',
+                backgroundColor: '#2C1810',
+                scene: new UnblockMeScene(
+                    (m) => setMoves(m),
+                    (m) => {
+                        setMoves(m);
+                        setGameState('levelComplete');
+                    }
+                )
+            };
 
-    const app = new PIXI.Application({
-      width: GAME_WIDTH,
-      height: GAME_HEIGHT,
-      backgroundColor: 0x2C1810, // Dark wood background
-    });
+            gameRef.current = new Phaser.Game(config);
+            
+            // Pass level data to scene
+            gameRef.current.events.on('ready', () => {
+                if (gameRef.current) {
+                    const scene = gameRef.current.scene.getScene('UnblockMeScene') as UnblockMeScene;
+                    scene.scene.restart({ level });
+                }
+            });
 
-    if (containerRef.current && app.view instanceof Node) {
-      containerRef.current.appendChild(app.view);
-    }
-
-    let gameRunning = true;
-    let blocks: Block[] = LEVELS[currentLevel].map(b => ({ ...b }));
-    let selectedBlock: number | null = null;
-    let dragOffset = { x: 0, y: 0 };
-    let localMoves = 0;
-    let isDragging = false;
-    let lastValidPosition = { x: 0, y: 0 };
-
-    // Background
-    const background = new PIXI.Graphics();
-    background.beginFill(0x8B4513); // Saddle brown
-    background.drawRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    background.endFill();
-    
-    // Wood grain texture
-    for (let i = 0; i < 20; i++) {
-      background.lineStyle(2, 0x654321, 0.3);
-      background.moveTo(Math.random() * GAME_WIDTH, 0);
-      background.lineTo(Math.random() * GAME_WIDTH, GAME_HEIGHT);
-    }
-    
-    app.stage.addChild(background);
-
-    // Game board
-    const board = new PIXI.Graphics();
-    board.beginFill(0xF5DEB3); // Wheat color for board
-    board.lineStyle(4, 0x8B4513);
-    board.drawRoundedRect(0, 0, GRID_SIZE * CELL_SIZE, GRID_SIZE * CELL_SIZE, 10);
-    board.endFill();
-    
-    // Grid lines
-    for (let i = 0; i <= GRID_SIZE; i++) {
-      board.lineStyle(1, 0xD2B48C, 0.5);
-      board.moveTo(i * CELL_SIZE, 0);
-      board.lineTo(i * CELL_SIZE, GRID_SIZE * CELL_SIZE);
-      board.moveTo(0, i * CELL_SIZE);
-      board.lineTo(GRID_SIZE * CELL_SIZE, i * CELL_SIZE);
-    }
-    
-    // Exit marker
-    board.lineStyle(4, 0xFF3333);
-    board.beginFill(0xFF3333, 0.3);
-    board.drawRect(GRID_SIZE * CELL_SIZE - 20, 2 * CELL_SIZE + 10, 20, CELL_SIZE - 20);
-    board.endFill();
-    
-    // Arrow indicating exit
-    board.beginFill(0xFF3333);
-    board.drawPolygon([
-      GRID_SIZE * CELL_SIZE - 15, 2 * CELL_SIZE + 20,
-      GRID_SIZE * CELL_SIZE - 5, 2 * CELL_SIZE + 30,
-      GRID_SIZE * CELL_SIZE - 15, 2 * CELL_SIZE + 40
-    ]);
-    board.endFill();
-    
-    app.stage.addChild(board);
-
-    // Block sprites
-    const blockSprites: PIXI.Graphics[] = [];
-
-    function createBlockSprite(block: Block, index: number): PIXI.Graphics {
-      const sprite = new PIXI.Graphics();
-      
-      // Block shadow
-      sprite.beginFill(0x000000, 0.2);
-      sprite.drawRoundedRect(4, 4, block.width * CELL_SIZE - 8, block.height * CELL_SIZE - 8, 8);
-      sprite.endFill();
-      
-      // Main block
-      if (block.isTarget) {
-        // Target block with gradient effect
-        sprite.beginFill(0xFF3333);
-        sprite.drawRoundedRect(0, 0, block.width * CELL_SIZE - 8, block.height * CELL_SIZE - 8, 8);
-        sprite.endFill();
-        
-        // Highlight effect
-        sprite.beginFill(0xFF6666, 0.5);
-        sprite.drawRoundedRect(2, 2, block.width * CELL_SIZE - 12, block.height * CELL_SIZE / 2 - 6, 6);
-        sprite.endFill();
-        
-        // Target symbol
-        sprite.beginFill(0xFFFFFF);
-        const centerX = (block.width * CELL_SIZE - 8) / 2;
-        const centerY = (block.height * CELL_SIZE - 8) / 2;
-        sprite.drawCircle(centerX, centerY, 8);
-        sprite.endFill();
-        
-        sprite.beginFill(0xFF3333);
-        sprite.drawCircle(centerX, centerY, 5);
-        sprite.endFill();
-      } else {
-        // Regular block
-        sprite.beginFill(block.color);
-        sprite.drawRoundedRect(0, 0, block.width * CELL_SIZE - 8, block.height * CELL_SIZE - 8, 8);
-        sprite.endFill();
-        
-        // Highlight effect with safe color calculation
-        const r = Math.min(255, ((block.color >> 16) & 0xFF) + 0x33);
-        const g = Math.min(255, ((block.color >> 8) & 0xFF) + 0x33);
-        const b = Math.min(255, (block.color & 0xFF) + 0x33);
-        const highlightColor = (r << 16) | (g << 8) | b;
-        sprite.beginFill(highlightColor, 0.5);
-        sprite.drawRoundedRect(2, 2, block.width * CELL_SIZE - 12, block.height * CELL_SIZE / 2 - 6, 6);
-        sprite.endFill();
-      }
-      
-      // Selection indicator
-      if (selectedBlock === index) {
-        sprite.lineStyle(4, 0xFFD700);
-        sprite.drawRoundedRect(-2, -2, block.width * CELL_SIZE - 4, block.height * CELL_SIZE - 4, 10);
-      }
-      
-      // Direction indicator
-      sprite.beginFill(0xFFFFFF, 0.8);
-      if (block.direction === 'horizontal') {
-        // Horizontal arrows
-        const y = (block.height * CELL_SIZE - 8) / 2;
-        sprite.drawPolygon([5, y - 3, 10, y, 5, y + 3]);
-        sprite.drawPolygon([block.width * CELL_SIZE - 13, y - 3, block.width * CELL_SIZE - 8, y, block.width * CELL_SIZE - 13, y + 3]);
-      } else {
-        // Vertical arrows
-        const x = (block.width * CELL_SIZE - 8) / 2;
-        sprite.drawPolygon([x - 3, 5, x, 10, x + 3, 5]);
-        sprite.drawPolygon([x - 3, block.height * CELL_SIZE - 13, x, block.height * CELL_SIZE - 8, x + 3, block.height * CELL_SIZE - 13]);
-      }
-      sprite.endFill();
-      
-      sprite.x = block.x * CELL_SIZE + 4;
-      sprite.y = block.y * CELL_SIZE + 4;
-      sprite.interactive = true;
-      sprite.cursor = 'pointer';
-      
-      return sprite;
-    }
-
-    function updateDisplay() {
-      // Remove old block sprites
-      blockSprites.forEach(sprite => app.stage.removeChild(sprite));
-      blockSprites.length = 0;
-      
-      // Create new block sprites
-      blocks.forEach((block, index) => {
-        const sprite = createBlockSprite(block, index);
-        blockSprites.push(sprite);
-        app.stage.addChild(sprite);
-      });
-    }
-
-    function isValidPosition(block: Block, newX: number, newY: number, excludeIndex: number): boolean {
-      // Check bounds
-      if (newX < 0 || newY < 0 || newX + block.width > GRID_SIZE || newY + block.height > GRID_SIZE) {
-        return false;
-      }
-      
-      // Check collision with other blocks
-      for (let i = 0; i < blocks.length; i++) {
-        if (i === excludeIndex) continue;
-        const other = blocks[i];
-        
-        if (newX < other.x + other.width &&
-            newX + block.width > other.x &&
-            newY < other.y + other.height &&
-            newY + block.height > other.y) {
-          return false;
+            return () => {
+                if (gameRef.current) {
+                    gameRef.current.destroy(true);
+                    gameRef.current = null;
+                }
+            };
         }
-      }
-      
-      return true;
-    }
+    }, [gameState, level]);
 
-    function checkWin(): boolean {
-      const targetBlock = blocks.find(b => b.isTarget);
-      return targetBlock ? targetBlock.x + targetBlock.width === GRID_SIZE : false;
-    }
-
-    function handlePointerDown(event: PIXI.FederatedPointerEvent) {
-      if (!gameRunning) return;
-      
-      const { x, y } = event.global;
-      const localX = x - 4;
-      const localY = y - 4;
-      
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i];
-        const blockLeft = block.x * CELL_SIZE;
-        const blockTop = block.y * CELL_SIZE;
-        const blockRight = blockLeft + block.width * CELL_SIZE;
-        const blockBottom = blockTop + block.height * CELL_SIZE;
-        
-        if (localX >= blockLeft && localX <= blockRight && 
-            localY >= blockTop && localY <= blockBottom) {
-          selectedBlock = i;
-          isDragging = true;
-          lastValidPosition = { x: block.x, y: block.y };
-          dragOffset.x = localX - blockLeft;
-          dragOffset.y = localY - blockTop;
-          updateDisplay();
-          break;
-        }
-      }
-    }
-
-    function handlePointerMove(event: PIXI.FederatedPointerEvent) {
-      if (!gameRunning || selectedBlock === null || !isDragging) return;
-      
-      const block = blocks[selectedBlock];
-      const { x, y } = event.global;
-      
-      let newX = block.x;
-      let newY = block.y;
-      
-      if (block.direction === 'horizontal') {
-        newX = Math.round((x - 4 - dragOffset.x) / CELL_SIZE);
-      } else {
-        newY = Math.round((y - 4 - dragOffset.y) / CELL_SIZE);
-      }
-      
-      if (isValidPosition(block, newX, newY, selectedBlock)) {
-        block.x = newX;
-        block.y = newY;
-        updateDisplay();
-      }
-    }
-
-    function handlePointerUp() {
-      if (!gameRunning || selectedBlock === null) return;
-      
-      const block = blocks[selectedBlock];
-      
-      // Check if block actually moved
-      if (block.x !== lastValidPosition.x || block.y !== lastValidPosition.y) {
-        localMoves++;
-        setMoves(localMoves);
-        
-        // Check for win
-        if (checkWin()) {
-          gameRunning = false;
-          
-          // Update best moves
-          if (localMoves < bestMoves[currentLevel]) {
-            const newBestMoves = [...bestMoves];
-            newBestMoves[currentLevel] = localMoves;
-            setBestMoves(newBestMoves);
-            localStorage.setItem('unblockme-best-moves', JSON.stringify(newBestMoves));
-          }
-          
-          if (currentLevel === LEVELS.length - 1) {
-            setGameState('gameComplete');
-          } else {
-            setGameState('levelComplete');
-          }
-        }
-      }
-      
-      selectedBlock = null;
-      isDragging = false;
-      updateDisplay();
-    }
-
-    // UI Elements
-    const uiContainer = new PIXI.Container();
-    
-    const levelText = new PIXI.Text(`Nivel ${currentLevel + 1}/${LEVELS.length}`, {
-      fontSize: 24,
-      fill: 0xFFFFFF,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    levelText.x = 10;
-    levelText.y = 10;
-    uiContainer.addChild(levelText);
-    
-    const movesText = new PIXI.Text(`Movimientos: ${localMoves}`, {
-      fontSize: 20,
-      fill: 0xFFFFFF,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    movesText.x = 10;
-    movesText.y = 40;
-    uiContainer.addChild(movesText);
-    
-    const bestText = new PIXI.Text(`Mejor: ${bestMoves[currentLevel] === Infinity ? '-' : bestMoves[currentLevel]}`, {
-      fontSize: 18,
-      fill: 0xFFD700,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    bestText.x = 10;
-    bestText.y = 65;
-    uiContainer.addChild(bestText);
-    
-    const instructionText = new PIXI.Text('Mueve el bloque rojo a la salida →', {
-      fontSize: 16,
-      fill: 0xFFFFFF,
-      stroke: 0x000000,
-      strokeThickness: 1
-    });
-    instructionText.x = 10;
-    instructionText.y = GAME_HEIGHT - 30;
-    uiContainer.addChild(instructionText);
-    
-    app.stage.addChild(uiContainer);
-    
-    // Event listeners
-    app.stage.interactive = true;
-    app.stage.on('pointerdown', handlePointerDown);
-    app.stage.on('pointermove', handlePointerMove);
-    app.stage.on('pointerup', handlePointerUp);
-    app.stage.on('pointerupoutside', handlePointerUp);
-
-    function updateGame() {
-      if (!gameRunning) return;
-      
-      movesText.text = `Movimientos: ${localMoves}`;
-    }
-
-    app.ticker.add(updateGame);
-    updateDisplay();
-
-    return () => {
-      gameRunning = false;
-      if (containerRef.current && app.view instanceof Node) {
-        containerRef.current.removeChild(app.view);
-      }
-      app.destroy();
+    const startGame = () => {
+        setLevel(0);
+        setMoves(0);
+        setGameState('playing');
     };
-  }, [gameState, currentLevel]);
 
-  const startGame = () => {
-    setGameState('playing');
-    setCurrentLevel(0);
-    setMoves(0);
-  };
-
-  const nextLevel = () => {
-    setCurrentLevel(prev => prev + 1);
-    setMoves(0);
-    setGameState('playing');
-  };
-
-  const restartLevel = () => {
-    setMoves(0);
-    setGameState('playing');
-  };
-
-  const resetProgress = () => {
-    setCurrentLevel(0);
-    setMoves(0);
-    setBestMoves(Array(LEVELS.length).fill(Infinity));
-    localStorage.removeItem('unblockme-best-moves');
-    setGameState('playing');
-  };
-
-  if (gameState === 'start') {
-    return (
-      <GameStartScreen
-        title="🧩 UNBLOCK ME"
-        description="Mueve el bloque rojo 🟥 hasta la salida usando el menor número de movimientos"
-        instructions={[
-          {
-            title: "Controles",
-            items: [
-              "🖱️ Click y arrastra los bloques",
-              "↔️ Bloques horizontales: izq/der",
-              "↕️ Bloques verticales: arriba/abajo"
-            ],
-            icon: "🕹️"
-          },
-          {
-            title: "Estrategia",
-            items: [
-              "• Planifica antes de mover",
-              "• Libera espacio primero",
-              "• Piensa varios pasos adelante"
-            ],
-            icon: "💡"
-          }
-        ]}
-        features={[
-          `${LEVELS.length} niveles de dificultad creciente`
-        ]}
-        onStart={startGame}
-        theme={{
-          background: 'linear-gradient(45deg, #8B4513 0%, #CD853F 50%, #DEB887 100%)',
-          primaryColor: '#8B4513',
-          secondaryColor: '#CD853F',
-          accentColor: '#FFD700',
-          titleGradient: 'linear-gradient(45deg, #FFD700, #FFA500)',
-          buttonGradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
-        }}
-      />
-    );
-  }
-
-  if (gameState === 'levelComplete') {
-    const isNewRecord = moves < bestMoves[currentLevel];
-    
-    return (
-      <GameOverScreen
-        title={isNewRecord ? '🏆 ¡NUEVO RÉCORD!' : '🎉 ¡NIVEL COMPLETADO!'}
-        score={moves}
-        onRestart={restartLevel}
-        onMenu={() => setGameState('start')}
-        theme={{
-          background: 'linear-gradient(135deg, #32CD32 0%, #98FB98 100%)',
-          primaryColor: '#32CD32',
-          secondaryColor: '#98FB98',
-          accentColor: '#FFD700',
-          titleGradient: 'linear-gradient(45deg, #FFFFFF, #FFFF00)',
-          buttonGradient: 'linear-gradient(45deg, #32CD32, #98FB98)'
-        }}
-        customContent={
-          <div style={{ fontSize: '1.2rem', margin: '1rem 0' }}>
-            <p>📊 Nivel {currentLevel + 1} completado</p>
-            <p>🎯 Movimientos usados: <strong>{moves}</strong></p>
-            <p>🏆 Tu mejor récord: <strong>{Math.min(moves, bestMoves[currentLevel])}</strong></p>
-            {isNewRecord && <p style={{ color: '#FFD700', fontWeight: 'bold', marginTop: '0.5rem' }}>¡Has superado tu récord anterior!</p>}
-          </div>
+    const nextLevel = () => {
+        if (level < LEVELS.length - 1) {
+            setLevel(l => l + 1);
+            setMoves(0);
+            setGameState('playing');
+        } else {
+            // Game Complete
+            setGameState('start'); // Or a specific game complete screen
         }
-        customButtons={
-          <button
-            onClick={nextLevel}
-            style={{
-              padding: '0.8rem 2rem',
-              fontSize: '1.2rem',
-              background: 'linear-gradient(45deg, #32CD32, #98FB98)',
-              border: 'none',
-              borderRadius: '12px',
-              color: 'white',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
-              transition: 'all 0.3s ease',
-              marginBottom: '1rem',
-              width: '100%'
-            }}
-          >
-            ➡️ Siguiente Nivel
-          </button>
-        }
-      />
-    );
-  }
+    };
 
-  if (gameState === 'gameComplete') {
-    const totalMoves = bestMoves.reduce((sum: number, moves: number) => sum + (moves === Infinity ? 0 : moves), 0);
-    
+    if (gameState === 'start') {
+        return (
+            <GameStartScreen
+                title="🧩 UNBLOCK ME"
+                description="Libera el bloque rojo moviendo los demás"
+                instructions={[
+                    { title: 'Mover', items: ['Arrastra los bloques para moverlos'], icon: '🖱️' },
+                    { title: 'Objetivo', items: ['Lleva el bloque rojo a la salida derecha'], icon: '🎯' }
+                ]}
+                onStart={startGame}
+            />
+        );
+    }
+
+    if (gameState === 'levelComplete') {
+        return (
+            <GameOverScreen
+                score={moves}
+                isVictory={true}
+                onRestart={() => {
+                    setMoves(0);
+                    setGameState('playing');
+                }}
+                onMenu={() => setGameState('start')}
+                customStats={[
+                    { label: 'Nivel', value: level + 1 },
+                    { label: 'Movimientos', value: moves }
+                ]}
+                customButtons={
+                    level < LEVELS.length - 1 ? (
+                        <button 
+                            onClick={nextLevel}
+                            style={{
+                                padding: '10px 20px',
+                                fontSize: '1.2rem',
+                                background: '#4CAF50',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                marginTop: '10px'
+                            }}
+                        >
+                            Siguiente Nivel ➡️
+                        </button>
+                    ) : undefined
+                }
+            />
+        );
+    }
+
     return (
-      <GameOverScreen
-        title="🏆 ¡JUEGO COMPLETADO!"
-        score={totalMoves}
-        onRestart={resetProgress}
-        onMenu={() => setGameState('start')}
-        theme={{
-          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-          primaryColor: '#FFD700',
-          secondaryColor: '#FFA500',
-          accentColor: '#FFFFFF',
-          titleGradient: 'linear-gradient(45deg, #FFFFFF, #FFFFE0)',
-          buttonGradient: 'linear-gradient(45deg, #8B4513, #CD853F)'
-        }}
-        customContent={
-          <div style={{ fontSize: '1.2rem', margin: '1rem 0' }}>
-            <p>🎯 Has completado todos los {LEVELS.length} niveles</p>
-            <p>🏆 Total de movimientos óptimos: <strong>{totalMoves}</strong></p>
-            <p>🧠 ¡Eres un maestro del puzzle!</p>
-          </div>
-        }
-      />
-    );
-  }
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            padding: '20px',
+            background: '#8B4513',
+            minHeight: '100dvh',
+            color: 'white'
+        }}>
+            <h1 style={{ margin: '0 0 20px 0' }}>🧩 UNBLOCK ME</h1>
+            
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                width: GAME_WIDTH,
+                marginBottom: '10px',
+                fontSize: '1.2rem',
+                fontWeight: 'bold'
+            }}>
+                <span>Nivel: {level + 1}</span>
+                <span>Movimientos: {moves}</span>
+            </div>
 
-  return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      padding: '20px',
-      background: 'linear-gradient(135deg, #8B4513 0%, #CD853F 100%)',
-      minHeight: '100dvh',
-      fontFamily: 'Arial, sans-serif',
-      color: 'white'
-    }}>
-      <h1 style={{ margin: '0 0 20px 0', fontSize: '2.5rem' }}>🧩 UNBLOCK ME</h1>
-      <div ref={containerRef} style={{ border: '3px solid #8B4513', borderRadius: '10px' }} />
-      <div style={{ marginTop: '20px', fontSize: '1.2rem', textAlign: 'center' }}>
-        <p>🖱️ Arrastra los bloques • 🎯 Libera el bloque rojo</p>
-      </div>
-    </div>
-  );
+            <div id="phaser-game" style={{ border: '4px solid #5D4037', borderRadius: '10px', overflow: 'hidden' }} />
+            
+            <div style={{ marginTop: '20px' }}>
+                Arrastra los bloques para liberar el camino
+            </div>
+        </div>
+    );
 };
 
 export default UnblockMe;

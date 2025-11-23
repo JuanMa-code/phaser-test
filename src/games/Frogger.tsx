@@ -1,5 +1,5 @@
-import * as PIXI from 'pixi.js';
 import React, { useEffect, useRef, useState } from 'react';
+import Phaser from 'phaser';
 import GameStartScreen from '../components/GameStartScreen';
 import GameOverScreen from '../components/GameOverScreen';
 
@@ -9,591 +9,494 @@ const CELL_SIZE = 40;
 const COLS = 13;
 const ROWS = 12;
 
-interface Lane {
-  type: 'road' | 'water' | 'safe';
-  speed: number;
-  direction: number;
-  vehicleCount: number;
-  color: number;
+interface LaneConfig {
+    type: 'road' | 'water' | 'safe';
+    speed: number;
+    direction: number;
+    vehicleCount: number;
+    color: number;
 }
 
-interface Vehicle {
-  x: number;
-  y: number;
-  lane: number;
-  sprite: PIXI.Graphics;
-  type: 'car' | 'truck' | 'log' | 'turtle';
-  width: number;
+class FroggerScene extends Phaser.Scene {
+    private frog!: Phaser.GameObjects.Sprite;
+    private vehicles!: Phaser.GameObjects.Group;
+    private logs!: Phaser.GameObjects.Group;
+    private turtles!: Phaser.GameObjects.Group;
+    private goals!: Phaser.GameObjects.Group;
+    
+    private frogGridPos = { x: 6, y: 11 };
+    private isMoving = false;
+    private moveTimer = 0;
+    
+    private score = 0;
+    private lives = 3;
+    private level = 1;
+    private goalReached = [false, false, false, false, false];
+    
+    private onScoreUpdate: (score: number) => void;
+    private onLivesUpdate: (lives: number) => void;
+    private onLevelUpdate: (level: number) => void;
+    private onGameOver: (score: number) => void;
+
+    private lanes: LaneConfig[] = [];
+
+    constructor(
+        onScoreUpdate: (score: number) => void,
+        onLivesUpdate: (lives: number) => void,
+        onLevelUpdate: (level: number) => void,
+        onGameOver: (score: number) => void
+    ) {
+        super('FroggerScene');
+        this.onScoreUpdate = onScoreUpdate;
+        this.onLivesUpdate = onLivesUpdate;
+        this.onLevelUpdate = onLevelUpdate;
+        this.onGameOver = onGameOver;
+    }
+
+    init(data: { level: number, score: number, lives: number }) {
+        this.level = data.level || 1;
+        this.score = data.score || 0;
+        this.lives = data.lives || 3;
+        this.goalReached = [false, false, false, false, false];
+        this.frogGridPos = { x: 6, y: 11 };
+        
+        this.initLanes();
+    }
+
+    initLanes() {
+        const speedMult = 1 + (this.level - 1) * 0.1;
+        this.lanes = [
+            { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0x90EE90 }, // Goal
+            { type: 'water', speed: 2 * speedMult, direction: 1, vehicleCount: 3, color: 0x4169E1 },
+            { type: 'water', speed: 1.5 * speedMult, direction: -1, vehicleCount: 2, color: 0x4682B4 },
+            { type: 'water', speed: 3 * speedMult, direction: 1, vehicleCount: 4, color: 0x4169E1 },
+            { type: 'water', speed: 2.5 * speedMult, direction: -1, vehicleCount: 3, color: 0x4682B4 },
+            { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0xDEB887 }, // Median
+            { type: 'road', speed: 3 * speedMult, direction: -1, vehicleCount: 2, color: 0x696969 },
+            { type: 'road', speed: 2 * speedMult, direction: 1, vehicleCount: 3, color: 0x708090 },
+            { type: 'road', speed: 4 * speedMult, direction: -1, vehicleCount: 2, color: 0x696969 },
+            { type: 'road', speed: 2.5 * speedMult, direction: 1, vehicleCount: 3, color: 0x708090 },
+            { type: 'road', speed: 3.5 * speedMult, direction: -1, vehicleCount: 2, color: 0x696969 },
+            { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0x228B22 }, // Start
+        ];
+    }
+
+    preload() {
+        this.createTextures();
+    }
+
+    createTextures() {
+        // Frog
+        const frog = this.make.graphics({ x: 0, y: 0 });
+        frog.fillStyle(0x32CD32);
+        frog.fillEllipse(20, 20, 18, 22);
+        frog.fillStyle(0x228B22);
+        frog.fillCircle(12, 8, 6);
+        frog.fillCircle(28, 8, 6);
+        frog.generateTexture('frog', 40, 40);
+
+        // Car
+        const car = this.make.graphics({ x: 0, y: 0 });
+        car.fillStyle(0xFF4444);
+        car.fillRoundedRect(0, 5, 40, 30, 4);
+        car.fillStyle(0x87CEEB);
+        car.fillRoundedRect(5, 10, 30, 20, 2);
+        car.generateTexture('car', 40, 40);
+
+        // Truck
+        const truck = this.make.graphics({ x: 0, y: 0 });
+        truck.fillStyle(0x8B4513);
+        truck.fillRoundedRect(0, 5, 80, 30, 4);
+        truck.fillStyle(0xA0522D);
+        truck.fillRoundedRect(60, 8, 15, 24, 2);
+        truck.generateTexture('truck', 80, 40);
+
+        // Log
+        const log = this.make.graphics({ x: 0, y: 0 });
+        log.fillStyle(0x8B4513);
+        log.fillRoundedRect(0, 5, 120, 30, 10);
+        log.generateTexture('log', 120, 40);
+
+        // Turtle
+        const turtle = this.make.graphics({ x: 0, y: 0 });
+        turtle.fillStyle(0x228B22);
+        turtle.fillEllipse(20, 20, 20, 15);
+        turtle.generateTexture('turtle', 40, 40);
+
+        // Goal
+        const goal = this.make.graphics({ x: 0, y: 0 });
+        goal.fillStyle(0x32CD32);
+        goal.fillEllipse(20, 20, 25, 15);
+        goal.generateTexture('goal-empty', 40, 40);
+        
+        goal.clear();
+        goal.fillStyle(0xFFD700);
+        goal.fillEllipse(20, 20, 25, 15);
+        goal.generateTexture('goal-filled', 40, 40);
+    }
+
+    create() {
+        // Draw background lanes
+        this.lanes.forEach((lane, i) => {
+            const bg = this.add.graphics();
+            bg.fillStyle(lane.color);
+            bg.fillRect(0, i * CELL_SIZE, GAME_WIDTH, CELL_SIZE);
+            
+            if (lane.type === 'road') {
+                bg.lineStyle(2, 0xFFFFFF, 0.5);
+                for (let x = 0; x < GAME_WIDTH; x += 40) {
+                    bg.moveTo(x + 10, i * CELL_SIZE + CELL_SIZE/2);
+                    bg.lineTo(x + 30, i * CELL_SIZE + CELL_SIZE/2);
+                }
+                bg.strokePath();
+            }
+        });
+
+        // Groups
+        this.logs = this.add.group();
+        this.turtles = this.add.group();
+        this.vehicles = this.add.group();
+        this.goals = this.add.group();
+
+        // Initialize objects
+        this.lanes.forEach((lane, row) => {
+            if (lane.vehicleCount > 0) {
+                const spacing = GAME_WIDTH / lane.vehicleCount;
+                for (let i = 0; i < lane.vehicleCount; i++) {
+                    const x = i * spacing + Phaser.Math.Between(0, 50);
+                    const y = row * CELL_SIZE + CELL_SIZE/2;
+                    
+                    if (lane.type === 'water') {
+                        if (row % 2 === 0) { // Logs
+                            const log = this.add.sprite(x, y, 'log');
+                            log.setData('speed', lane.speed * lane.direction);
+                            this.logs.add(log);
+                        } else { // Turtles
+                            const turtle = this.add.sprite(x, y, 'turtle');
+                            turtle.setData('speed', lane.speed * lane.direction);
+                            this.turtles.add(turtle);
+                        }
+                    } else if (lane.type === 'road') {
+                        const type = Phaser.Math.RND.pick(['car', 'truck']);
+                        const vehicle = this.add.sprite(x, y, type);
+                        vehicle.setData('speed', lane.speed * lane.direction);
+                        if (lane.direction === -1) vehicle.setFlipX(true);
+                        this.vehicles.add(vehicle);
+                    }
+                }
+            }
+        });
+
+        // Goals
+        for (let i = 0; i < 5; i++) {
+            const x = 50 + i * 80 + 30; // Adjusted spacing
+            const goal = this.add.sprite(x, CELL_SIZE/2, 'goal-empty');
+            this.goals.add(goal);
+        }
+
+        // Frog
+        this.frog = this.add.sprite(
+            this.frogGridPos.x * CELL_SIZE + CELL_SIZE/2,
+            this.frogGridPos.y * CELL_SIZE + CELL_SIZE/2,
+            'frog'
+        );
+        this.frog.setDepth(10);
+
+        // Controls
+        this.input.keyboard!.on('keydown-UP', () => this.move(0, -1));
+        this.input.keyboard!.on('keydown-DOWN', () => this.move(0, 1));
+        this.input.keyboard!.on('keydown-LEFT', () => this.move(-1, 0));
+        this.input.keyboard!.on('keydown-RIGHT', () => this.move(1, 0));
+        this.input.keyboard!.on('keydown-W', () => this.move(0, -1));
+        this.input.keyboard!.on('keydown-S', () => this.move(0, 1));
+        this.input.keyboard!.on('keydown-A', () => this.move(-1, 0));
+        this.input.keyboard!.on('keydown-D', () => this.move(1, 0));
+    }
+
+    move(dx: number, dy: number) {
+        if (this.isMoving) return;
+
+        const newX = this.frogGridPos.x + dx;
+        const newY = this.frogGridPos.y + dy;
+
+        if (newX >= 0 && newX < COLS && newY >= 0 && newY < ROWS) {
+            this.frogGridPos.x = newX;
+            this.frogGridPos.y = newY;
+            
+            this.frog.x = newX * CELL_SIZE + CELL_SIZE/2;
+            this.frog.y = newY * CELL_SIZE + CELL_SIZE/2;
+            
+            if (dy < 0) {
+                this.score += 10;
+                this.onScoreUpdate(this.score);
+            }
+
+            // Check goal
+            if (newY === 0) {
+                this.checkGoal(newX);
+            }
+        }
+    }
+
+    checkGoal(x: number) {
+        // Map x coordinate to goal index (approximate)
+        // Goals are at indices 1, 3, 5, 7, 9 in grid terms roughly
+        // But we placed them visually. Let's use simple distance check to goals
+        let reachedGoalIndex = -1;
+        
+        this.goals.children.entries.forEach((goal: any, index) => {
+            if (Math.abs(goal.x - this.frog.x) < 20) {
+                reachedGoalIndex = index;
+            }
+        });
+
+        if (reachedGoalIndex !== -1 && !this.goalReached[reachedGoalIndex]) {
+            this.goalReached[reachedGoalIndex] = true;
+            (this.goals.children.entries[reachedGoalIndex] as Phaser.GameObjects.Sprite).setTexture('goal-filled');
+            this.score += 100;
+            this.onScoreUpdate(this.score);
+            this.resetFrog();
+
+            if (this.goalReached.every(r => r)) {
+                this.levelUp();
+            }
+        } else {
+            this.loseLife();
+        }
+    }
+
+    update() {
+        // Move objects
+        const moveObject = (obj: any) => {
+            obj.x += obj.getData('speed');
+            const width = obj.width;
+            if (obj.getData('speed') > 0 && obj.x > GAME_WIDTH + width/2) obj.x = -width/2;
+            if (obj.getData('speed') < 0 && obj.x < -width/2) obj.x = GAME_WIDTH + width/2;
+        };
+
+        this.logs.children.entries.forEach(moveObject);
+        this.turtles.children.entries.forEach(moveObject);
+        this.vehicles.children.entries.forEach(moveObject);
+
+        // Check collisions
+        this.checkCollisions();
+    }
+
+    checkCollisions() {
+        const frogRect = this.frog.getBounds();
+        const lane = this.lanes[this.frogGridPos.y];
+
+        if (lane.type === 'road') {
+            let hit = false;
+            this.vehicles.children.entries.forEach((v: any) => {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(frogRect, v.getBounds())) {
+                    hit = true;
+                }
+            });
+            if (hit) this.loseLife();
+        } else if (lane.type === 'water') {
+            let safe = false;
+            let speed = 0;
+
+            this.logs.children.entries.forEach((l: any) => {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(frogRect, l.getBounds())) {
+                    safe = true;
+                    speed = l.getData('speed');
+                }
+            });
+
+            this.turtles.children.entries.forEach((t: any) => {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(frogRect, t.getBounds())) {
+                    safe = true;
+                    speed = t.getData('speed');
+                }
+            });
+
+            if (safe) {
+                this.frog.x += speed;
+                // Update grid pos roughly to keep in sync if needed, but mainly visual here
+                if (this.frog.x < 0 || this.frog.x > GAME_WIDTH) this.loseLife();
+            } else {
+                this.loseLife();
+            }
+        }
+    }
+
+    loseLife() {
+        this.lives--;
+        this.onLivesUpdate(this.lives);
+        
+        if (this.lives <= 0) {
+            this.scene.pause();
+            this.onGameOver(this.score);
+        } else {
+            this.resetFrog();
+        }
+    }
+
+    resetFrog() {
+        this.frogGridPos = { x: 6, y: 11 };
+        this.frog.x = this.frogGridPos.x * CELL_SIZE + CELL_SIZE/2;
+        this.frog.y = this.frogGridPos.y * CELL_SIZE + CELL_SIZE/2;
+    }
+
+    levelUp() {
+        this.level++;
+        this.score += 200;
+        this.onLevelUpdate(this.level);
+        this.onScoreUpdate(this.score);
+        this.scene.restart({ level: this.level, score: this.score, lives: this.lives });
+    }
 }
 
 const Frogger: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver' | 'win'>('start');
-  const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
-  const [level, setLevel] = useState(1);
-  const [highScore, setHighScore] = useState(() => {
-    const saved = localStorage.getItem('frogger-highscore');
-    return saved ? parseInt(saved) : 0;
-  });
-
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    const app = new PIXI.Application({
-      width: GAME_WIDTH,
-      height: GAME_HEIGHT,
-      backgroundColor: 0x228B22, // Forest green
+    const [gameState, setGameState] = useState<'start' | 'playing' | 'gameOver'>('start');
+    const [score, setScore] = useState(0);
+    const [lives, setLives] = useState(3);
+    const [level, setLevel] = useState(1);
+    const [highScore, setHighScore] = useState(() => {
+        const saved = localStorage.getItem('frogger-highscore');
+        return saved ? parseInt(saved) : 0;
     });
+    const gameRef = useRef<Phaser.Game | null>(null);
 
-    if (containerRef.current && app.view instanceof Node) {
-      containerRef.current.appendChild(app.view);
-    }
+    useEffect(() => {
+        if (gameState === 'playing') {
+            const config: Phaser.Types.Core.GameConfig = {
+                type: Phaser.AUTO,
+                width: GAME_WIDTH,
+                height: GAME_HEIGHT,
+                parent: 'phaser-game',
+                backgroundColor: '#228B22',
+                scene: new FroggerScene(
+                    (s) => setScore(s),
+                    (l) => setLives(l),
+                    (lvl) => setLevel(lvl),
+                    (finalScore) => {
+                        setScore(finalScore);
+                        if (finalScore > highScore) {
+                            setHighScore(finalScore);
+                            localStorage.setItem('frogger-highscore', finalScore.toString());
+                        }
+                        setGameState('gameOver');
+                    }
+                )
+            };
 
-    let gameRunning = true;
-    let localScore = 0;
-    let localLives = 3;
-    let localLevel = 1;
-    let frogX = Math.floor(COLS / 2);
-    let frogY = ROWS - 1;
-    let vehicles: Vehicle[] = [];
-    let goalReached = [false, false, false, false, false]; // 5 goal slots
-    let moveTimer = 0;
+            gameRef.current = new Phaser.Game(config);
 
-    // Lane configuration
-    const lanes: Lane[] = [
-      { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0x90EE90 }, // Goal area
-      { type: 'water', speed: 2 + localLevel * 0.5, direction: 1, vehicleCount: 3, color: 0x4169E1 },
-      { type: 'water', speed: 1.5 + localLevel * 0.3, direction: -1, vehicleCount: 2, color: 0x4682B4 },
-      { type: 'water', speed: 3 + localLevel * 0.7, direction: 1, vehicleCount: 4, color: 0x4169E1 },
-      { type: 'water', speed: 2.5 + localLevel * 0.5, direction: -1, vehicleCount: 3, color: 0x4682B4 },
-      { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0xDEB887 }, // Median
-      { type: 'road', speed: 3 + localLevel * 0.5, direction: -1, vehicleCount: 2, color: 0x696969 },
-      { type: 'road', speed: 2 + localLevel * 0.3, direction: 1, vehicleCount: 3, color: 0x708090 },
-      { type: 'road', speed: 4 + localLevel * 0.7, direction: -1, vehicleCount: 2, color: 0x696969 },
-      { type: 'road', speed: 2.5 + localLevel * 0.4, direction: 1, vehicleCount: 3, color: 0x708090 },
-      { type: 'road', speed: 3.5 + localLevel * 0.6, direction: -1, vehicleCount: 2, color: 0x696969 },
-      { type: 'safe', speed: 0, direction: 0, vehicleCount: 0, color: 0x228B22 }, // Starting area
-    ];
-
-    // Background
-    const backgroundContainer = new PIXI.Container();
-    app.stage.addChild(backgroundContainer);
-
-    // Draw lanes
-    for (let y = 0; y < ROWS; y++) {
-      const lane = lanes[y];
-      const laneGraphics = new PIXI.Graphics();
-      
-      if (lane.type === 'road') {
-        // Road with lane markings
-        laneGraphics.beginFill(lane.color);
-        laneGraphics.drawRect(0, 0, GAME_WIDTH, CELL_SIZE);
-        laneGraphics.endFill();
-        
-        // Lane dividers
-        laneGraphics.lineStyle(2, 0xFFFFFF, 0.8);
-        for (let x = 0; x < GAME_WIDTH; x += 40) {
-          laneGraphics.moveTo(x + 10, CELL_SIZE / 2);
-          laneGraphics.lineTo(x + 30, CELL_SIZE / 2);
+            return () => {
+                if (gameRef.current) {
+                    gameRef.current.destroy(true);
+                    gameRef.current = null;
+                }
+            };
         }
-      } else if (lane.type === 'water') {
-        // Water with wave effect
-        laneGraphics.beginFill(lane.color);
-        laneGraphics.drawRect(0, 0, GAME_WIDTH, CELL_SIZE);
-        laneGraphics.endFill();
-        
-        // Wave pattern
-        laneGraphics.beginFill(0xE0F6FF, 0.3);
-        for (let x = 0; x < GAME_WIDTH; x += 60) {
-          laneGraphics.drawEllipse(x + 15, CELL_SIZE / 2, 20, 8);
-        }
-        laneGraphics.endFill();
-      } else {
-        // Safe areas
-        laneGraphics.beginFill(lane.color);
-        laneGraphics.drawRect(0, 0, GAME_WIDTH, CELL_SIZE);
-        laneGraphics.endFill();
-        
-        if (y === 0) {
-          // Goal area with lily pads
-          for (let i = 0; i < 5; i++) {
-            const padX = 50 + i * 80;
-            laneGraphics.beginFill(goalReached[i] ? 0xFFD700 : 0x32CD32);
-            laneGraphics.drawEllipse(padX, CELL_SIZE / 2, 25, 15);
-            laneGraphics.endFill();
-          }
-        }
-      }
-      
-      laneGraphics.y = y * CELL_SIZE;
-      backgroundContainer.addChild(laneGraphics);
-    }
+    }, [gameState, highScore]);
 
-    // Frog
-    const frog = new PIXI.Graphics();
-    
-    function drawFrog() {
-      frog.clear();
-      
-      // Frog body
-      frog.beginFill(0x32CD32); // Lime green
-      frog.drawEllipse(0, 0, 18, 22);
-      frog.endFill();
-      
-      // Eyes
-      frog.beginFill(0x228B22);
-      frog.drawCircle(-8, -12, 6);
-      frog.drawCircle(8, -12, 6);
-      frog.endFill();
-      
-      frog.beginFill(0x000000);
-      frog.drawCircle(-8, -12, 3);
-      frog.drawCircle(8, -12, 3);
-      frog.endFill();
-      
-      // Eye shine
-      frog.beginFill(0xFFFFFF);
-      frog.drawCircle(-7, -13, 1);
-      frog.drawCircle(9, -13, 1);
-      frog.endFill();
-      
-      // Legs
-      frog.beginFill(0x228B22);
-      frog.drawEllipse(-15, 5, 8, 12);
-      frog.drawEllipse(15, 5, 8, 12);
-      frog.drawEllipse(-12, 18, 6, 8);
-      frog.drawEllipse(12, 18, 6, 8);
-      frog.endFill();
-    }
-    
-    function updateFrogPosition() {
-      frog.x = frogX * CELL_SIZE + CELL_SIZE / 2;
-      frog.y = frogY * CELL_SIZE + CELL_SIZE / 2;
-    }
-    
-    drawFrog();
-    updateFrogPosition();
-    app.stage.addChild(frog);
-
-    function createVehicle(laneIndex: number): Vehicle {
-      const lane = lanes[laneIndex];
-      const types = lane.type === 'water' ? ['log', 'turtle'] : ['car', 'truck'];
-      const type = types[Math.floor(Math.random() * types.length)] as 'car' | 'truck' | 'log' | 'turtle';
-      
-      const sprite = new PIXI.Graphics();
-      let width = 1;
-      
-      if (type === 'car') {
-        sprite.beginFill(Math.random() > 0.5 ? 0xFF4444 : 0x4444FF);
-        sprite.drawRoundedRect(-15, -8, 30, 16, 4);
-        sprite.endFill();
-        
-        // Windows
-        sprite.beginFill(0x87CEEB);
-        sprite.drawRoundedRect(-12, -5, 24, 10, 2);
-        sprite.endFill();
-        
-        // Headlights
-        sprite.beginFill(0xFFFFFF);
-        sprite.drawCircle(lane.direction > 0 ? 15 : -15, -6, 2);
-        sprite.drawCircle(lane.direction > 0 ? 15 : -15, 6, 2);
-        sprite.endFill();
-        
-        width = 1;
-      } else if (type === 'truck') {
-        sprite.beginFill(0x8B4513);
-        sprite.drawRoundedRect(-25, -10, 50, 20, 4);
-        sprite.endFill();
-        
-        // Cab
-        sprite.beginFill(0xA0522D);
-        sprite.drawRoundedRect(lane.direction > 0 ? 10 : -30, -8, 20, 16, 3);
-        sprite.endFill();
-        
-        width = 2;
-      } else if (type === 'log') {
-        sprite.beginFill(0x8B4513);
-        sprite.drawRoundedRect(-30, -6, 60, 12, 6);
-        sprite.endFill();
-        
-        // Wood rings
-        sprite.lineStyle(2, 0x654321);
-        for (let i = -20; i <= 20; i += 15) {
-          sprite.drawCircle(i, 0, 8);
-        }
-        
-        width = 2;
-      } else { // turtle
-        sprite.beginFill(0x228B22);
-        sprite.drawEllipse(0, 0, 20, 15);
-        sprite.endFill();
-        
-        // Shell pattern
-        sprite.lineStyle(2, 0x006400);
-        sprite.drawEllipse(0, 0, 15, 10);
-        sprite.moveTo(-8, -3);
-        sprite.lineTo(8, 3);
-        sprite.moveTo(-8, 3);
-        sprite.lineTo(8, -3);
-        
-        width = 1;
-      }
-      
-      const startX = lane.direction > 0 ? -width : COLS + width;
-      sprite.x = startX * CELL_SIZE + CELL_SIZE / 2;
-      sprite.y = laneIndex * CELL_SIZE + CELL_SIZE / 2;
-      
-      app.stage.addChild(sprite);
-      
-      return {
-        x: startX,
-        y: laneIndex,
-        lane: laneIndex,
-        sprite,
-        type,
-        width
-      };
-    }
-
-    function initVehicles() {
-      vehicles = [];
-      for (let i = 0; i < ROWS; i++) {
-        const lane = lanes[i];
-        if (lane.vehicleCount > 0) {
-          for (let j = 0; j < lane.vehicleCount; j++) {
-            const vehicle = createVehicle(i);
-            vehicle.x = (j * (COLS / lane.vehicleCount)) + Math.random() * 3;
-            vehicle.sprite.x = vehicle.x * CELL_SIZE + CELL_SIZE / 2;
-            vehicles.push(vehicle);
-          }
-        }
-      }
-    }
-
-    function updateVehicles() {
-      for (const vehicle of vehicles) {
-        const lane = lanes[vehicle.lane];
-        vehicle.x += lane.speed * lane.direction * 0.02;
-        
-        // Wrap around
-        if (lane.direction > 0 && vehicle.x > COLS + vehicle.width) {
-          vehicle.x = -vehicle.width;
-        } else if (lane.direction < 0 && vehicle.x < -vehicle.width) {
-          vehicle.x = COLS + vehicle.width;
-        }
-        
-        vehicle.sprite.x = vehicle.x * CELL_SIZE + CELL_SIZE / 2;
-      }
-    }
-
-    function checkCollisions() {
-      const currentLane = lanes[frogY];
-      
-      if (currentLane.type === 'road') {
-        // Check car collision
-        for (const vehicle of vehicles) {
-          if (vehicle.y === frogY) {
-            const distance = Math.abs(vehicle.x - frogX);
-            if (distance < 0.8) {
-              loseLife();
-              return;
-            }
-          }
-        }
-      } else if (currentLane.type === 'water') {
-        // Check if on log/turtle
-        let onVehicle = false;
-        for (const vehicle of vehicles) {
-          if (vehicle.y === frogY) {
-            const distance = Math.abs(vehicle.x - frogX);
-            if (distance < vehicle.width * 0.8) {
-              onVehicle = true;
-              // Move frog with the log/turtle
-              if (currentLane.direction > 0) {
-                frogX += currentLane.speed * 0.02;
-              } else {
-                frogX -= currentLane.speed * 0.02;
-              }
-              break;
-            }
-          }
-        }
-        
-        if (!onVehicle) {
-          loseLife();
-          return;
-        }
-      }
-      
-      // Check boundaries
-      if (frogX < 0 || frogX >= COLS) {
-        loseLife();
-        return;
-      }
-      
-      // Check goal
-      if (frogY === 0) {
-        const goalSlot = Math.floor((frogX - 1.5) / 2);
-        if (goalSlot >= 0 && goalSlot < 5 && !goalReached[goalSlot]) {
-          goalReached[goalSlot] = true;
-          localScore += 100;
-          setScore(localScore);
-          
-          // Reset frog position
-          frogX = Math.floor(COLS / 2);
-          frogY = ROWS - 1;
-          
-          // Check if all goals reached
-          if (goalReached.every(g => g)) {
-            nextLevel();
-          }
-        } else {
-          loseLife();
-        }
-      }
-    }
-
-    function loseLife() {
-      localLives--;
-      setLives(localLives);
-      
-      if (localLives <= 0) {
-        gameRunning = false;
-        setGameState('gameOver');
-        
-        // Update high score
-        if (localScore > highScore) {
-          setHighScore(localScore);
-          localStorage.setItem('frogger-highscore', localScore.toString());
-        }
-      } else {
-        // Reset frog position
-        frogX = Math.floor(COLS / 2);
-        frogY = ROWS - 1;
-      }
-    }
-
-    function nextLevel() {
-      localLevel++;
-      setLevel(localLevel);
-      localScore += 200; // Level bonus
-      setScore(localScore);
-      goalReached = [false, false, false, false, false];
-      
-      // Reset frog
-      frogX = Math.floor(COLS / 2);
-      frogY = ROWS - 1;
-      
-      // Recreate faster vehicles
-      vehicles.forEach(v => app.stage.removeChild(v.sprite));
-      initVehicles();
-    }
-
-    // UI
-    const scoreText = new PIXI.Text('Score: 0', {
-      fontSize: 20,
-      fill: 0xFFFFFF,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    scoreText.x = 10;
-    scoreText.y = 10;
-    app.stage.addChild(scoreText);
-
-    const livesText = new PIXI.Text('Lives: 3', {
-      fontSize: 20,
-      fill: 0xFF4444,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    livesText.x = 150;
-    livesText.y = 10;
-    app.stage.addChild(livesText);
-
-    const levelText = new PIXI.Text('Level: 1', {
-      fontSize: 20,
-      fill: 0x44FF44,
-      fontWeight: 'bold',
-      stroke: 0x000000,
-      strokeThickness: 2
-    });
-    levelText.x = 280;
-    levelText.y = 10;
-    app.stage.addChild(levelText);
-
-    function updateGame() {
-      if (!gameRunning) return;
-      
-      // Decrease move timer
-      if (moveTimer > 0) {
-        moveTimer--;
-      }
-      
-      updateVehicles();
-      checkCollisions();
-      updateFrogPosition();
-      
-      // Update UI
-      scoreText.text = `Score: ${localScore}`;
-      livesText.text = `Lives: ${localLives}`;
-      levelText.text = `Level: ${localLevel}`;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (!gameRunning) return;
-      
-      if (moveTimer > 0) return; // Prevent too fast movement
-      
-      let moved = false;
-      
-      switch(event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-          if (frogY > 0) {
-            frogY--;
-            localScore += 10; // Points for moving forward
-            setScore(localScore);
-            moved = true;
-          }
-          break;
-        case 'ArrowDown':
-        case 'KeyS':
-          if (frogY < ROWS - 1) {
-            frogY++;
-            moved = true;
-          }
-          break;
-        case 'ArrowLeft':
-        case 'KeyA':
-          if (frogX > 0) {
-            frogX--;
-            moved = true;
-          }
-          break;
-        case 'ArrowRight':
-        case 'KeyD':
-          if (frogX < COLS - 1) {
-            frogX++;
-            moved = true;
-          }
-          break;
-      }
-      
-      if (moved) {
-        moveTimer = 5; // Set timer after movement
-        updateFrogPosition();
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown);
-    
-    initVehicles();
-    app.ticker.add(updateGame);
-
-    return () => {
-      gameRunning = false;
-      window.removeEventListener('keydown', handleKeyDown);
-      if (containerRef.current && app.view instanceof Node) {
-        containerRef.current.removeChild(app.view);
-      }
-      app.destroy();
+    const startGame = () => {
+        setGameState('playing');
+        setScore(0);
+        setLives(3);
+        setLevel(1);
     };
-  }, [gameState]);
 
-  const startGame = () => {
-    setGameState('playing');
-    setScore(0);
-    setLives(3);
-    setLevel(1);
-  };
+    const restartGame = () => {
+        setGameState('playing');
+        setScore(0);
+        setLives(3);
+        setLevel(1);
+    };
 
-  const restartGame = () => {
-    setGameState('playing');
-    setScore(0);
-    setLives(3);
-    setLevel(1);
-  };
+    if (gameState === 'start') {
+        return (
+            <GameStartScreen
+                title="🐸 FROGGER"
+                description="¡Ayuda a la rana a cruzar el tráfico y el río!"
+                highScore={highScore}
+                instructions={[
+                    {
+                        title: 'Controles',
+                        items: [
+                            "↑/W: Arriba",
+                            "↓/S: Abajo",
+                            "←/A: Izquierda",
+                            "→/D: Derecha"
+                        ],
+                        icon: '🎮'
+                    },
+                    {
+                        title: 'Objetivo',
+                        items: [
+                            "🚗 Evita los coches",
+                            "🌊 Usa troncos y tortugas",
+                            "🎯 Llega a las 5 metas"
+                        ],
+                        icon: '⚠️'
+                    }
+                ]}
+                onStart={startGame}
+                theme={{
+                    primary: '#32CD32',
+                    secondary: '#228B22',
+                    accent: '#90EE90',
+                    background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
+                }}
+            />
+        );
+    }
 
-  if (gameState === 'start') {
+    if (gameState === 'gameOver') {
+        return (
+            <GameOverScreen
+                score={score}
+                highScore={highScore}
+                onRestart={restartGame}
+                onMenu={() => setGameState('start')}
+                theme={{
+                    primary: '#32CD32',
+                    secondary: '#228B22',
+                    accent: '#90EE90',
+                    background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
+                }}
+                customStats={[
+                    { label: 'Nivel Alcanzado', value: level },
+                    { label: 'Vidas Restantes', value: lives }
+                ]}
+            />
+        );
+    }
+
     return (
-      <GameStartScreen
-        title="🐸 FROGGER"
-        description="¡Ayuda a la rana a cruzar el tráfico y el río!"
-        highScore={highScore}
-        instructions={[
-          {
-            title: 'Controles',
-            items: [
-              "↑/W: Arriba",
-              "↓/S: Abajo",
-              "←/A: Izquierda",
-              "→/D: Derecha"
-            ],
-            icon: '🎮'
-          },
-          {
-            title: 'Objetivo',
-            items: [
-              "🚗 Evita los coches",
-              "🌊 Usa troncos y tortugas",
-              "🎯 Llega a las 5 metas"
-            ],
-            icon: '⚠️'
-          }
-        ]}
-        onStart={startGame}
-        theme={{
-          primary: '#32CD32',
-          secondary: '#228B22',
-          accent: '#90EE90',
-          background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
-        }}
-      />
+        <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            padding: '20px',
+            background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)',
+            minHeight: '100dvh',
+            fontFamily: 'Arial, sans-serif',
+            color: 'white'
+        }}>
+            <h1 style={{ margin: '0 0 20px 0', fontSize: '2.5rem' }}>🐸 FROGGER</h1>
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                width: GAME_WIDTH, 
+                marginBottom: '10px',
+                fontWeight: 'bold',
+                fontSize: '1.2rem'
+            }}>
+                <span>Score: {score}</span>
+                <span>Level: {level}</span>
+                <span>Lives: {lives}</span>
+            </div>
+            <div id="phaser-game" style={{ border: '3px solid #32CD32', borderRadius: '10px', overflow: 'hidden' }} />
+            <div style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+                <p>↑↓←→ o WASD para mover la rana</p>
+            </div>
+        </div>
     );
-  }
-
-  if (gameState === 'gameOver') {
-    return (
-      <GameOverScreen
-        score={score}
-        highScore={highScore}
-        onRestart={restartGame}
-        onMenu={() => setGameState('start')}
-        theme={{
-          primary: '#32CD32',
-          secondary: '#228B22',
-          accent: '#90EE90',
-          background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)'
-        }}
-        customStats={[
-          { label: 'Nivel Alcanzado', value: level },
-          { label: 'Vidas Restantes', value: lives }
-        ]}
-      />
-    );
-  }
-
-  return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      padding: '20px',
-      background: 'linear-gradient(135deg, #228B22 0%, #32CD32 100%)',
-      minHeight: '100dvh',
-      fontFamily: 'Arial, sans-serif',
-      color: 'white'
-    }}>
-      <h1 style={{ margin: '0 0 20px 0', fontSize: '2.5rem' }}>🐸 FROGGER</h1>
-      <div ref={containerRef} style={{ border: '3px solid #32CD32', borderRadius: '10px' }} />
-      <div style={{ marginTop: '20px', fontSize: '1.2rem' }}>
-        <p>↑↓←→ o WASD para mover la rana</p>
-      </div>
-    </div>
-  );
 };
 
 export default Frogger;

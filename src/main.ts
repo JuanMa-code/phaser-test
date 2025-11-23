@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(gameDiv);
   }
 
-  // Este archivo no debe contener lógica del juego ni inicialización de PixiJS.
+  // Este archivo no debe contener lógica del juego.
   // El punto de entrada de la app es src/main.tsx, que carga React y el router.
 
   // Puedes eliminar este archivo si no lo usas, o dejarlo vacío como referencia.

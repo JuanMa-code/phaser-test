@@ -1,6 +1,6 @@
 # 🎮 Arcade GO GO
 
-Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 19 juegos populares desarrollados con React, TypeScript, PIXI.js y Phaser.
+Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 19 juegos populares desarrollados con React, TypeScript y Phaser.
 
 ## 🚀 Demo en Vivo
 
@@ -69,7 +69,6 @@ phaser-test/
 
 - **React 19.1.0** - Framework de interfaz de usuario
 - **TypeScript** - Tipado estático para JavaScript
-- **PIXI.js 7.4.3** - Motor de renderizado 2D de alto rendimiento
 - **Phaser 3.90.0** - Framework de desarrollo de juegos HTML5
 - **Vite** - Herramienta de construcción y desarrollo
 - **React Router** - Navegación entre juegos
