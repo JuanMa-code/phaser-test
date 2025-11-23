@@ -38,27 +38,30 @@ Una colección completa de juegos clásicos recreados con tecnologías modernas.
 ```
 phaser-test/
 ├── src/
-│   ├── main.tsx         # Punto de entrada principal
+│   ├── components/      # Componentes reutilizables (UI, Menús)
+│   ├── games/           # Implementación de los juegos
+│   │   ├── AirHockey.tsx
+│   │   ├── Arkanoid.tsx
+│   │   ├── Asteroids.tsx
+│   │   ├── Brotato.tsx
+│   │   ├── Dino.tsx
+│   │   ├── DoodleJump.tsx
+│   │   ├── Flappy.tsx
+│   │   ├── Football.tsx
+│   │   ├── Frogger.tsx
+│   │   ├── Minesweeper.tsx
+│   │   ├── Pong.tsx
+│   │   ├── Snake.tsx
+│   │   ├── SpaceInvaders.tsx
+│   │   ├── Sudoku.tsx
+│   │   ├── Tetris.tsx
+│   │   ├── TowerDefense.tsx
+│   │   ├── UnblockMe.tsx
+│   │   └── WhacAMole.tsx
+│   ├── pages/           # Páginas de la aplicación
 │   ├── App.tsx          # Componente principal con menú
-│   ├── assets/          # Recursos del juego (imágenes, sonidos)
-│   ├── AirHockey.tsx    # Hockey de aire con bot inteligente
-│   ├── Arkanoid.tsx     # Juego de romper bloques
-│   ├── Asteroids.tsx    # Juego de asteroides espaciales
-│   ├── Brotato.tsx      # Juego de supervivencia roguelike
-│   ├── Dino.tsx         # Juego del dinosaurio de Chrome
-│   ├── DoodleJump.tsx   # Juego de saltos en plataformas
-│   ├── Flappy.tsx       # Clon de Flappy Bird
-│   ├── Football.tsx     # Simulador de fútbol con IA
-│   ├── Frogger.tsx      # Juego de cruzar la carretera
-│   ├── Minesweeper.tsx  # Buscaminas clásico
-│   ├── Pong.tsx         # Tenis de mesa retro
-│   ├── Snake.tsx        # Serpiente clásica
-│   ├── SpaceInvaders.tsx # Invasores del espacio
-│   ├── Sudoku.tsx       # Sudoku con generador y 4 dificultades
-│   ├── Tetris.tsx       # Puzzle de bloques
-│   ├── TowerDefense.tsx # Defensa de torres
-│   ├── UnblockMe.tsx    # Puzzle de bloques deslizantes
-│   └── WhacAMole.tsx    # Golpea el topo
+│   ├── main.tsx         # Punto de entrada principal
+│   └── main.ts          # Script auxiliar
 ├── package.json         # Configuración de npm
 ├── tsconfig.json        # Configuración de TypeScript
 ├── vite.config.ts       # Configuración de Vite
