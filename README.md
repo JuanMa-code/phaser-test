@@ -1,6 +1,6 @@
 # 🎮 Arcade GO GO
 
-Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 19 juegos populares desarrollados con React, TypeScript y Phaser.
+Una colección completa de juegos clásicos recreados con tecnologías modernas. Este proyecto incluye 18 juegos populares desarrollados con React, TypeScript y Phaser.
 
 ## 🚀 Demo en Vivo
 
